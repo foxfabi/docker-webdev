@@ -1,0 +1,59 @@
+version: "3.1"
+
+services:
+
+    app:
+      image: debian:jessie
+      container_name: app
+      entrypoint: /bin/bash
+      stdin_open: true # docker run -i
+      tty: true        # docker run -t
+      volumes:
+        - ./application/html:/var/www/html
+        - ./application/data:/var/lib/mysql
+
+    mariadb:
+      image: mariadb:10.4
+      container_name: mariadb
+      restart: always
+      depends_on:
+        - app
+      environment:
+        - MYSQL_ROOT_PASSWORD=happyplace
+        - MYSQL_DATABASE=happyplace
+        - MYSQL_USER=happyplace
+        - MYSQL_PASSWORD=happyplace
+      ports:
+        - "8083:3306"
+      volumes_from:
+        - app
+
+    webserver:
+      build: ./nginx/
+      container_name: webserver
+      ports:
+       - "80:80"
+      depends_on:
+        - app
+        - php
+      volumes_from:
+        - app
+
+    php:
+      build: ./php/
+      expose:
+          - 9000
+      container_name: php
+      volumes_from:
+        - app
+
+    adminer:
+      image: adminer
+      container_name: adminer
+      restart: always
+      ports:
+        - 8080:8080
+      depends_on:
+        - mariadb
+        - php
+        - app

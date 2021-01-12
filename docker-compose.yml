@@ -32,7 +32,7 @@ services:
       build: ./nginx/
       container_name: webserver
       ports:
-       - "80:80"
+        - "80:80"
       depends_on:
         - app
         - php
@@ -44,6 +44,14 @@ services:
       expose:
           - 9000
       container_name: php
+      volumes_from:
+        - app
+
+    cli:
+      build: ./php-cli/
+      stdin_open: true # docker run -i
+      tty: true        # docker run -t
+      container_name: cli
       volumes_from:
         - app
 

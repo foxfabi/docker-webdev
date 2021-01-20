@@ -1,4 +1,4 @@
-# LEMP Stack (Docker )
+# LEMP Stack (Docker)
 
 Docker Containers (as microservice approach), which are executed with `docker-compose` as a multi-container application (stack).
 

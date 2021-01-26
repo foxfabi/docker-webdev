@@ -9,6 +9,8 @@ Docker Containers (as microservice approach), which are executed with `docker-co
 - SQL database **MariaDB**
 - **Adminer** for database administration
 
+## Command line usage
+
 To start/stop the stack, enter the following command in the terminal:
 
 ```bash
@@ -33,3 +35,7 @@ To execute a PHP script with the command line interface (CLI):
 ```bash
 docker exec cli /usr/local/bin/php /var/www/html/nominatim.php
 ```
+
+## License
+
+MIT © Fabian Dennler

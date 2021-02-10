@@ -1,17 +1,17 @@
-version: "3.9"
+version: "3.6"
 services:
     app:
-      image: debian:jessie
       container_name: app
+      image: debian:jessie
       entrypoint: /bin/bash
       stdin_open: true # docker run -i
       tty: true        # docker run -t
       volumes:
-        - ./application/html:/var/www/html
+        - ./applications:/var/www/html
         - database-storage:/var/lib/mysql
     mariadb:
-      image: mariadb:10.4
       container_name: mariadb
+      image: mariadb:10.4
       restart: always
       depends_on:
         - app
@@ -25,32 +25,38 @@ services:
       volumes:
         - database-storage:/var/lib/mysql
     webserver:
-      build: ./nginx/
       container_name: webserver
+      build:
+        context: ./.docker
+        dockerfile: nginx.dockerfile
       ports:
         - "80:80"
       depends_on:
         - app
         - php
       volumes:
-        - ./application/html:/var/www/html
+        - ./applications:/var/www/html
     php:
-      build: ./php/
+      container_name: php
+      build:
+        context: ./.docker
+        dockerfile: php.dockerfile
       expose:
           - 9000
-      container_name: php
       volumes:
-        - ./application/html:/var/www/html
+        - ./applications:/var/www/html
     cli:
-      build: ./php-cli/
+      container_name: cli
+      build:
+        context: ./.docker
+        dockerfile: php-cli.dockerfile
       stdin_open: true # docker run -i
       tty: true        # docker run -t
-      container_name: cli
       volumes:
-        - ./application/html:/var/www/html
+        - ./applications:/var/www/html
     adminer:
-      image: adminer
       container_name: adminer
+      image: adminer
       restart: always
       ports:
         - 8080:8080

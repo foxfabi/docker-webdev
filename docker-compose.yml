@@ -1,18 +1,19 @@
 version: "3.6"
 services:
     app:
-      container_name: app
+      restart: unless-stopped
+      container_name: example-app
       image: debian:jessie
       entrypoint: /bin/bash
       stdin_open: true # docker run -i
       tty: true        # docker run -t
       volumes:
-        - ./applications:/var/www/html
+        - ./application:/var/www/html
         - database-storage:/var/lib/mysql
-    mariadb:
-      container_name: mariadb
+    db:
+      restart: unless-stopped
+      container_name: example-db
       image: mariadb:10.4
-      restart: always
       depends_on:
         - app
       environment:
@@ -24,8 +25,9 @@ services:
         - "8083:3306"
       volumes:
         - database-storage:/var/lib/mysql
-    webserver:
-      container_name: webserver
+    www:
+      restart: unless-stopped
+      container_name: example-www
       build:
         context: ./.docker
         dockerfile: nginx.dockerfile
@@ -35,33 +37,35 @@ services:
         - app
         - php
       volumes:
-        - ./applications:/var/www/html
+        - ./application:/var/www/html
     php:
-      container_name: php
+      restart: unless-stopped
+      container_name: example-php
       build:
         context: ./.docker
         dockerfile: php.dockerfile
       expose:
           - 9000
       volumes:
-        - ./applications:/var/www/html
+        - ./application:/var/www/html
     cli:
-      container_name: cli
+      restart: unless-stopped
+      container_name: example-cli
       build:
         context: ./.docker
         dockerfile: php-cli.dockerfile
       stdin_open: true # docker run -i
       tty: true        # docker run -t
       volumes:
-        - ./applications:/var/www/html
+        - ./application:/var/www/html
     adminer:
-      container_name: adminer
+      restart: unless-stopped
+      container_name: example-dba
       image: adminer
-      restart: always
       ports:
         - 8080:8080
       depends_on:
-        - mariadb
+        - db
         - php
         - app
 volumes:

@@ -1,72 +1,164 @@
-version: "3.6"
+version: "3.7"
+
+networks:
+  dev:
+    external: false
+
 services:
-    app:
-      restart: unless-stopped
-      container_name: example-app
-      image: debian:jessie
-      entrypoint: /bin/bash
-      stdin_open: true # docker run -i
-      tty: true        # docker run -t
-      volumes:
-        - ./application:/var/www/html
-        - database-storage:/var/lib/mysql
-    db:
-      restart: unless-stopped
-      container_name: example-db
-      image: mariadb:10.4
-      depends_on:
-        - app
-      environment:
-        - MYSQL_ROOT_PASSWORD=happyplace
-        - MYSQL_DATABASE=happyplace
-        - MYSQL_USER=happyplace
-        - MYSQL_PASSWORD=happyplace
-      ports:
-        - "8083:3306"
-      volumes:
-        - database-storage:/var/lib/mysql
-    www:
-      restart: unless-stopped
-      container_name: example-www
-      build:
-        context: ./.docker
-        dockerfile: nginx.dockerfile
-      ports:
-        - "80:80"
-      depends_on:
-        - app
-        - php
-      volumes:
-        - ./application:/var/www/html
-    php:
-      restart: unless-stopped
-      container_name: example-php
-      build:
-        context: ./.docker
-        dockerfile: php.dockerfile
-      expose:
-          - 9000
-      volumes:
-        - ./application:/var/www/html
-    cli:
-      restart: unless-stopped
-      container_name: example-cli
-      build:
-        context: ./.docker
-        dockerfile: php-cli.dockerfile
-      stdin_open: true # docker run -i
-      tty: true        # docker run -t
-      volumes:
-        - ./application:/var/www/html
-    adminer:
-      restart: unless-stopped
-      container_name: example-dba
-      image: adminer
-      ports:
-        - 8080:8080
-      depends_on:
-        - db
-        - php
-        - app
-volumes:
-  database-storage:
+  loki:
+    image: grafana/loki:2.0.0
+    container_name: "dev.loki"
+    restart: unless-stopped
+    ports:
+      - "7100:3100"
+    # command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - dev
+    volumes:
+      - ./.docker/loki-config.yaml:/etc/loki/local-config.yaml
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+  promtail:
+    image: grafana/promtail:2.0.0
+    container_name: "dev.promtail"
+    restart: unless-stopped
+    networks:
+      - dev
+    volumes:
+      - /var/log:/var/log
+      - ./.docker/promtail-config.yaml:/etc/loki/local-config.yaml
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: "dev.grafana"
+    restart: unless-stopped
+    ports:
+      - "7300:3000"
+    networks:
+      - dev
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=manager
+      - GF_USERS_DEFAULT_THEME=dark
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_USERS_ALLOW_ORG_CREATE=false
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_INSTALL_PLUGINS=
+    depends_on:
+      - loki
+      - promtail
+
+  gitea:
+    image: gitea/gitea:latest
+    container_name: "dev.gitea"
+    restart: unless-stopped
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      - GITEA__database__DB_TYPE=mysql
+      - GITEA__database__HOST=devdb:3306
+      - GITEA__database__NAME=c0metDev
+      - GITEA__database__USER=c0metDev
+      - GITEA__database__PASSWD=c0metDev
+    restart: unless-stopped
+    volumes:
+      - ./application/gitea.data:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "7330:3000"
+    networks:
+      - dev
+    depends_on:
+      - db
+
+  adminer:
+    image: adminer:latest
+    container_name: "dev.adminer"
+    restart: unless-stopped
+    ports:
+      - '7088:8080'
+    networks:
+      - dev
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - db
+
+  db:
+    image: mariadb:latest
+    container_name: "dev.db"
+    restart: unless-stopped
+    ports:
+      - '7306:3306'
+    networks:
+      - dev
+    environment:
+      - MYSQL_ROOT_PASSWORD=c0metDev
+      - MYSQL_USER=c0metDev
+      - MYSQL_PASSWORD=c0metDev
+      - MYSQL_DATABASE=c0metDev
+    volumes:
+      - ./application/db.data:/var/lib/mysql
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+  mail:
+    image: schickling/mailcatcher:latest
+    container_name: "dev.mail"
+    restart: unless-stopped
+    ports:
+      - '7180:1080'
+    networks:
+      - dev
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+  php:
+    restart: unless-stopped
+    build: ./.docker/php/
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+    container_name: dev.php
+    volumes:
+      - ./application/backend:/application/backend
+    networks:
+      - dev
+    expose:
+      - 9000
+
+  nodejs:
+    build:
+      context: .
+      dockerfile: ./.docker/nodejs/Dockerfile
+      target: development
+    container_name: "dev.nodejs"
+    restart: unless-stopped
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+    networks:
+      - dev
+    ports:
+      - '7090:7090'
+    volumes:
+      - ./application/frontend/dist:/var/www/frontend
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+  nginx:
+    build: ./.docker/nginx/
+    container_name: dev.nginx
+    ports:
+      - "7080:80"
+    depends_on:
+      - php
+    volumes:
+      - ./application/backend/public:/var/www/backend

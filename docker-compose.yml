@@ -1,4 +1,4 @@
-version: "3"
+version: "3.7"
 
 networks:
   dev:
@@ -129,11 +129,29 @@ services:
     tty: true        # docker run -t
     container_name: dev.php
     volumes:
-      - ./application/:/application
+      - ./application/backend:/application/backend
     networks:
       - dev
     expose:
       - 9000
+
+  nodejs:
+    build:
+      context: .
+      dockerfile: ./.docker/nodejs/Dockerfile
+      target: development
+    container_name: "dev.nodejs"
+    restart: unless-stopped
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+    networks:
+      - dev
+    ports:
+      - '7090:7090'
+    volumes:
+      - ./application/frontend/dist:/var/www/frontend
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
 
   nginx:
     build: ./.docker/nginx/
@@ -143,4 +161,4 @@ services:
     depends_on:
       - php
     volumes:
-      - ./application/html:/var/www/html
+      - ./application/backend/public:/var/www/backend

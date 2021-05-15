@@ -31,7 +31,7 @@ docker-compose -f "docker-web/docker-compose.yml" down
 To open a shell in the application's container, use:
 
 ```bash
-docker exec -it app /bin/bash
+docker exec -it <container> /bin/bash
 ```
 
 To create an archive of the stack use inside the project folder:

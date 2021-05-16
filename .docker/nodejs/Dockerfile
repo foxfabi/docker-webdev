@@ -15,6 +15,7 @@ FROM node:lts-alpine AS base
 # smoke tests
 RUN echo "NodeJS Version:" "$(node -v)" && \
     echo "NPM Version:" "$(npm -v)"
+WORKDIR /var/www/frontend
 
 # Lints Code
 FROM base AS linting
@@ -41,8 +42,8 @@ RUN npm config set unsafe-perm true && \
 #             --timeout=5s \
 #             --retries=6 \
 #             CMD curl --fail http://localhost:7090/ || exit 1
-ENTRYPOINT ["npm"]
-CMD ["run", "serve"]
+# ENTRYPOINT ["npm"]
+# CMD ["run", "serve"]
 
 # Build the frontend
 FROM base AS builder

@@ -5,7 +5,7 @@ ENV COMPOSER_ALLOW_SUPERUSER 1
 FROM php:7.4-cli-buster AS base
 ENV COMPOSER_ALLOW_SUPERUSER 1
 ENV LC_ALL C.UTF-8
-
+WORKDIR /var/www/backend
 RUN apt-get update &&           \
     apt-get install -y          \
     ca-certificates             \

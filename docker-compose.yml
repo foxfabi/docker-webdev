@@ -129,7 +129,7 @@ services:
     tty: true        # docker run -t
     container_name: dev.php
     volumes:
-      - ./application/backend:/application/backend
+      - ./application/backend:/var/www/backend
     networks:
       - dev
     expose:
@@ -149,7 +149,7 @@ services:
     ports:
       - '7090:7090'
     volumes:
-      - ./application/frontend/dist:/var/www/frontend
+      - ./application/frontend:/var/www/frontend
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
 
@@ -161,4 +161,4 @@ services:
     depends_on:
       - php
     volumes:
-      - ./application/backend/public:/var/www/backend
+      - ./application/frontend/dist:/var/www/html

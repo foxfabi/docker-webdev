@@ -10,7 +10,7 @@ services:
     container_name: "dev.loki"
     restart: unless-stopped
     ports:
-      - "7100:3100"
+      - "7431:3100"
     # command: -config.file=/etc/loki/local-config.yaml
     networks:
       - dev
@@ -36,7 +36,7 @@ services:
     container_name: "dev.grafana"
     restart: unless-stopped
     ports:
-      - "7300:3000"
+      - "7430:3000"
     networks:
       - dev
     volumes:
@@ -66,13 +66,16 @@ services:
       - GITEA__database__NAME=c0metDev
       - GITEA__database__USER=c0metDev
       - GITEA__database__PASSWD=c0metDev
+      - DEFAULT_THEME=arc-green
+      - AUTHOR="Gitea - Git with a cup of tea"
+      - HTTP_PORT=7433
     restart: unless-stopped
     volumes:
-      - ./application/gitea.data:/data
+      - ./storage/gitea.data:/data
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     ports:
-      - "7330:3000"
+      - "7433:7433"
     networks:
       - dev
     depends_on:
@@ -83,7 +86,7 @@ services:
     container_name: "dev.adminer"
     restart: unless-stopped
     ports:
-      - '7088:8080'
+      - '7488:8080'
     networks:
       - dev
     volumes:
@@ -97,16 +100,16 @@ services:
     container_name: "dev.db"
     restart: unless-stopped
     ports:
-      - '7306:3306'
+      - '7406:3306'
     networks:
       - dev
     environment:
-      - MYSQL_ROOT_PASSWORD=c0metDev
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PW}
       - MYSQL_USER=c0metDev
       - MYSQL_PASSWORD=c0metDev
       - MYSQL_DATABASE=c0metDev
     volumes:
-      - ./application/db.data:/var/lib/mysql
+      - ./storage/db.data:/var/lib/mysql
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
 
@@ -115,7 +118,7 @@ services:
     container_name: "dev.mail"
     restart: unless-stopped
     ports:
-      - '7180:1080'
+      - '7418:1080'
     networks:
       - dev
     volumes:
@@ -124,14 +127,19 @@ services:
 
   php:
     restart: unless-stopped
-    build: ./.docker/php/
+    build:
+      context: .
+      dockerfile: ./.docker/php/Dockerfile
+      target: development
     stdin_open: true # docker run -i
     tty: true        # docker run -t
     container_name: dev.php
     volumes:
-      - ./application/backend:/var/www/backend
+      - ./src/backend:/var/www/backend
     networks:
       - dev
+    ports:
+      - '7409:7409'
     expose:
       - 9000
 
@@ -147,9 +155,9 @@ services:
     networks:
       - dev
     ports:
-      - '7090:7090'
+      - '7490:7090'
     volumes:
-      - ./application/frontend:/var/www/frontend
+      - ./src/frontend:/var/www/frontend
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
 
@@ -157,8 +165,9 @@ services:
     build: ./.docker/nginx/
     container_name: dev.nginx
     ports:
-      - "7080:80"
+      - "7480:80"
     depends_on:
       - php
     volumes:
-      - ./application/frontend/dist:/var/www/html
+      - ./src/frontend:/var/www/frontend
+      - ./src/backend:/var/www/backend

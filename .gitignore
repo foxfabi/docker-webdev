@@ -1,2 +1,4 @@
-application/gitea.data/
-application/db.data/
+storage/
+**/node_modules/
+**/vendor/
+**/dist/

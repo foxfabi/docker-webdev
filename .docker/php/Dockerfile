@@ -5,7 +5,8 @@ ENV COMPOSER_ALLOW_SUPERUSER 1
 FROM php:7.4-cli-buster AS base
 ENV COMPOSER_ALLOW_SUPERUSER 1
 ENV LC_ALL C.UTF-8
-WORKDIR /var/www/backend
+#RUN pwd && ls -la
+
 RUN apt-get update &&           \
     apt-get install -y          \
     ca-certificates             \
@@ -46,11 +47,20 @@ RUN docker-php-ext-install -j$(nproc)   \
 RUN echo "date.timezone=Europe/Zurich" >> $PHP_INI_DIR/php.ini
 # copy the Composer PHAR from the Composer image into the PHP image
 COPY --from=composer /usr/bin/composer /usr/bin/composer
-
+WORKDIR /var/www/backend
+COPY ./src/backend .
+RUN pwd && ls -la
+RUN composer install \
+    --no-interaction \
+    --no-scripts \
+    --profile
 # Smoke test
 RUN echo "PHP Version:" "$(php -v)"
 RUN echo "Composer Version:" "$(composer --version)"
+EXPOSE 9000
 
+
+FROM base as development
 ADD https://squizlabs.github.io/PHP_CodeSniffer/phpcs.phar /usr/local/bin/phpcs
 RUN chmod 755 /usr/local/bin/phpcs
 ADD https://squizlabs.github.io/PHP_CodeSniffer/phpcbf.phar /usr/local/bin/phpcbf
@@ -60,19 +70,59 @@ RUN phpcs --config-set show_progress 1 && \
     phpcs --config-set default_standard PSR12  && \
     phpcs --config-set severity 1  && \
     phpcs --config-set report_width 120
-
 # PHPDocumentor
 ADD http://www.phpdoc.org/phpDocumentor.phar /usr/local/bin/phpdoc
 RUN chmod 755 /usr/local/bin/phpdoc
-
 # PHPUnit
 ADD https://phar.phpunit.de/phpunit-6.5.phar /usr/local/bin/phpunit
 RUN chmod 755 /usr/local/bin/phpunit
-
 # XDebug
 RUN echo "[xdebug]" >> $PHP_INI_DIR/php.ini && \
   echo "xdebug.mode=debug" >> $PHP_INI_DIR/php.ini && \
   echo "xdebug.start_with_request = yes" >> $PHP_INI_DIR/php.ini && \
   echo "xdebug.client_port = 9000" >> $PHP_INI_DIR/php.ini && \
   echo 'xdebug.idekey = "VSCODE"' >> $PHP_INI_DIR/php.ini
-EXPOSE 9000
+CMD [ "php", "-S", "0.0.0.0:7409" ]
+
+# Build the backend
+FROM base AS builder
+# ENV COMPOSER_ALLOW_SUPERUSER 1
+# PHP Compose
+# RUN curl -sfL https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer && \
+#     chmod +x /usr/bin/composer                                                                     && \
+#     composer self-update 2.0.12
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --no-scripts \
+    --optimize-autoloader \
+    --prefer-dist \
+    --profile
+
+# Build the async backend
+FROM builder AS swoole
+ENV SWOOLE_URL=https://github.com/swoole/swoole-src/archive/v4.6.6.tar.gz
+RUN docker-php-source extract &&        \
+    mkdir /usr/src/php/ext/swoole &&    \
+    curl -sfL $SWOOLE_URL -o swoole.tar.gz && \
+    tar xfz swoole.tar.gz --strip-components=1 -C /usr/src/php/ext/swoole && \
+    docker-php-ext-configure swoole \
+        --enable-http2 --enable-mysqlnd --enable-openssl \
+        --enable-sockets --enable-swoole-curl --enable-swoole-json && \
+    docker-php-ext-install -j$(nproc) swoole && \
+    rm -f swoole.tar.gz $HOME/.composer/*-old.phar && \
+    docker-php-source delete && \
+    rm -rf /var/lib/apt/lists/* $HOME/.composer/*-old.phar /usr/bin/qemu-*-static
+
+FROM php:7.4.7-cli-alpine3.12 as production
+WORKDIR /var/www/backend
+COPY ./src/backend .
+# you may want the php-fpm image
+# I serve my applications with Swoole and nginx reverse proxy(10 times better performance this way)
+# So I use the php-cli image.
+COPY --from=builder /usr/local/lib/php/extensions /usr/local/lib/php/extensions
+# You may remove extensions that you don't need from here.
+# RUN apk add --no-cache docker-php-ext-enable msgpack bcmath gd gmp sockets swoole
+#HEALTHCHECK CMD curl --fail http://localhost:9501/ || exit 1
+# EXPOSE 9501
+CMD [ "php", "-S", "0.0.0.0:7409" ]

@@ -16,6 +16,7 @@ FROM node:lts-alpine AS base
 RUN echo "NodeJS Version:" "$(node -v)" && \
     echo "NPM Version:" "$(npm -v)"
 WORKDIR /var/www/frontend
+COPY ./src/frontend .
 
 # Lints Code
 FROM base AS linting
@@ -35,15 +36,15 @@ CMD ["run", "lint"]
 FROM base as development
 #EXPOSE "7090:7090"
 ENV NODE_ENV=development
-RUN npm config set unsafe-perm true && \
-    npm install -g nodemon && \
-    npm install
+RUN npm config set unsafe-perm true &&      \
+    npm install -g nodemon &&               \
+    npm install eslint --save-dev
 # HEALTHCHECK --interval=5s \
 #             --timeout=5s \
 #             --retries=6 \
 #             CMD curl --fail http://localhost:7090/ || exit 1
-# ENTRYPOINT ["npm"]
-# CMD ["run", "serve"]
+ENTRYPOINT ["node"]
+CMD ["server.js"]
 
 # Build the frontend
 FROM base AS builder
@@ -58,3 +59,6 @@ RUN npm run test
 RUN npm run build
 # get rid of any development dependencies
 RUN npm prune --production
+ENTRYPOINT ["node"]
+CMD ["server.js"]
+# FROM builder as production

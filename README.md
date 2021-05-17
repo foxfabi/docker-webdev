@@ -9,13 +9,15 @@ Docker Containers (as microservice approach), which are executed with `docker-co
 ## Images and Containers
 
 - **Persistent storage** (Application and Data Volume Container).
-- [**NGINX**](https://www.nginx.com/) Web server. (`Listen on port: 7080`)
-- **PHP 7.4.x (CLI)** with Composer, PHP CodeSniffer, phpDocumentor, phpunit and XDebug (Multi Stage). (`Listen on port: 9000`)
-- [**MariaDB**](https://mariadb.org/) SQL database. (`Listen on port: 7306`)
-- [**Adminer**](https://www.adminer.org/) for database administration. (`Listen on port: 7180`)
-- [**Grafana**](https://grafana.com/) logging. (`Listen on port: 7100 / 7980`)
-- [**Gitea**](https://gitea.io/) Repository and Issue tracker. (`Listen on port: 7330`)
-- [**MailCatcher**](https://mailcatcher.me/) to catch all mail and stores it for display. (`Listen on port: 7180`)
+  - `./application/frontend`
+  - `./application/backend`
+- [**NGINX**](https://www.nginx.com/) Web server. Deliver the frontend `./application/frontend/dist` and provide API access via proxy forwarder.
+- **PHP 7.4.x (CLI)** with Composer, PHP CodeSniffer, phpDocumentor, phpunit and XDebug (Multi Stage) for development.
+- [**MariaDB**](https://mariadb.org/) SQL database.
+- [**Adminer**](https://www.adminer.org/) for database administration.
+- [**Grafana**](https://grafana.com/) logging.
+- [**Gitea**](https://gitea.io/) Repository and Issue tracker.
+- [**MailCatcher**](https://mailcatcher.me/) to catch all mail and stores it for display.
 
 ## Command line usage
 
@@ -24,8 +26,8 @@ Docker Containers (as microservice approach), which are executed with `docker-co
 To start/stop the stack, enter the following command in the terminal:
 
 ```bash
-docker-compose -f "docker-web/docker-compose.yml" up
-docker-compose -f "docker-web/docker-compose.yml" down
+docker-compose -f "docker-compose.yml" up -d
+docker-compose -f "docker-compose.yml" down
 ```
 
 To open a shell in the application's container, use:
@@ -34,16 +36,10 @@ To open a shell in the application's container, use:
 docker exec -it <container> /bin/bash
 ```
 
-To create an archive of the stack use inside the project folder:
-
-```bash
-tar --exclude='./application/data/' -czvf ../docker-web-raw.tar.gz .
-```
-
 To execute a PHP script:
 
 ```bash
-docker exec php /usr/local/bin/php /var/www/html/index.php
+docker exec php /usr/local/bin/php /var/www/backend/public/index.php
 ```
 
 ## License

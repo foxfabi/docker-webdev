@@ -24,7 +24,8 @@ Docker Containers (as microservice approach), which are executed with `docker-co
 ### Gitea
 
 - To access gitea from your development environment you should set `SSH-Server-Domain` and `Gitea-Base-URL` to an appropriate resolvable name or IP address.
-- Add the administration user on setup or the first user registerd will be the admin
+- Add the administration user on setup or the first user registered will be the admin
+- Gitea supports Git over SSH. You might be familiar with this when you work with GitHub repositories. You need to create a key pair on your computer and add the public key under _Your Settings_ -> _SSH / GPG Keys_ . Copy and paste the public key into the Content text field then click the green Add Key button.
 
 ## Command line usage
 

@@ -44,6 +44,20 @@ RUN docker-php-ext-install -j$(nproc)   \
     bcmath                              \
     sockets
 
+# Add the async backend
+ENV SWOOLE_URL=https://github.com/swoole/swoole-src/archive/v4.6.6.tar.gz
+RUN docker-php-source extract &&        \
+    mkdir /usr/src/php/ext/swoole &&    \
+    curl -sfL $SWOOLE_URL -o swoole.tar.gz && \
+    tar xfz swoole.tar.gz --strip-components=1 -C /usr/src/php/ext/swoole && \
+    docker-php-ext-configure swoole \
+        --enable-http2 --enable-mysqlnd --enable-openssl \
+        --enable-sockets --enable-swoole-curl --enable-swoole-json && \
+    docker-php-ext-install -j$(nproc) swoole && \
+    rm -f swoole.tar.gz $HOME/.composer/*-old.phar && \
+    docker-php-source delete && \
+    rm -rf /var/lib/apt/lists/* $HOME/.composer/*-old.phar /usr/bin/qemu-*-static
+
 RUN echo "date.timezone=Europe/Zurich" >> $PHP_INI_DIR/php.ini
 # copy the Composer PHAR from the Composer image into the PHP image
 COPY --from=composer /usr/bin/composer /usr/bin/composer
@@ -82,7 +96,10 @@ RUN echo "[xdebug]" >> $PHP_INI_DIR/php.ini && \
   echo "xdebug.start_with_request = yes" >> $PHP_INI_DIR/php.ini && \
   echo "xdebug.client_port = 9000" >> $PHP_INI_DIR/php.ini && \
   echo 'xdebug.idekey = "VSCODE"' >> $PHP_INI_DIR/php.ini
-CMD [ "php", "-S", "0.0.0.0:7409" ]
+CMD [ "/usr/local/bin/php", "-S", "0.0.0.0:7409", "-t", "/var/www/backend/public/"]
+#EXPOSE 7409
+#CMD ["/usr/local/bin/php", "/var/www/backend/public/server.php"]
+
 
 # Build the backend
 FROM base AS builder
@@ -99,22 +116,9 @@ RUN composer install \
     --prefer-dist \
     --profile
 
-# Build the async backend
-FROM builder AS swoole
-ENV SWOOLE_URL=https://github.com/swoole/swoole-src/archive/v4.6.6.tar.gz
-RUN docker-php-source extract &&        \
-    mkdir /usr/src/php/ext/swoole &&    \
-    curl -sfL $SWOOLE_URL -o swoole.tar.gz && \
-    tar xfz swoole.tar.gz --strip-components=1 -C /usr/src/php/ext/swoole && \
-    docker-php-ext-configure swoole \
-        --enable-http2 --enable-mysqlnd --enable-openssl \
-        --enable-sockets --enable-swoole-curl --enable-swoole-json && \
-    docker-php-ext-install -j$(nproc) swoole && \
-    rm -f swoole.tar.gz $HOME/.composer/*-old.phar && \
-    docker-php-source delete && \
-    rm -rf /var/lib/apt/lists/* $HOME/.composer/*-old.phar /usr/bin/qemu-*-static
 
-FROM php:7.4.7-cli-alpine3.12 as production
+#FROM php:7.4.7-cli-alpine3.12 as production
+FROM builder AS production
 WORKDIR /var/www/backend
 COPY ./src/backend .
 # you may want the php-fpm image
@@ -125,4 +129,6 @@ COPY --from=builder /usr/local/lib/php/extensions /usr/local/lib/php/extensions
 # RUN apk add --no-cache docker-php-ext-enable msgpack bcmath gd gmp sockets swoole
 #HEALTHCHECK CMD curl --fail http://localhost:9501/ || exit 1
 # EXPOSE 9501
-CMD [ "php", "-S", "0.0.0.0:7409" ]
+CMD [ "/usr/local/bin/php", "-S", "0.0.0.0:7409", "-t", "/var/www/backend/public/"]
+#EXPOSE 7409
+#CMD ["/usr/local/bin/php", "/var/www/backend/public/server.php"] # swoole

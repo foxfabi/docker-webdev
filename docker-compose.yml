@@ -9,8 +9,9 @@ services:
     image: grafana/loki:2.0.0
     container_name: "dev.loki"
     restart: unless-stopped
+    env_file: ./.env
     ports:
-      - "7431:3100"
+      - "${LOKI_PORT}:3100"
     # command: -config.file=/etc/loki/local-config.yaml
     networks:
       - dev
@@ -118,7 +119,7 @@ services:
     container_name: "dev.mail"
     restart: unless-stopped
     ports:
-      - '7418:1080'
+      - "${WEBMAIL_PORT}:1080"
     networks:
       - dev
     volumes:
@@ -139,7 +140,7 @@ services:
     networks:
       - dev
     ports:
-      - '7409:7409'
+      - '${PHPSRV_PORT}:${PHPSRV_PORT}'
     expose:
       - 9000
 
@@ -165,7 +166,7 @@ services:
     build: ./.docker/nginx/
     container_name: dev.nginx
     ports:
-      - "7480:80"
+      - "${NGINX_PORT}:80"
     depends_on:
       - php
     volumes:

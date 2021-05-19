@@ -109,7 +109,7 @@ services:
       DATABASE_GITEA: ${GITEA_DATABASE}
     volumes:
       - ./storage/db.data:/var/lib/mysql
-      - ./docker/db/init:/docker-entrypoint-initdb.d
+      - ./.docker/db/init:/docker-entrypoint-initdb.d:ro
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
 

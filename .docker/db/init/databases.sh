@@ -3,17 +3,22 @@
 set -eo pipefail
 
 _create_database() {
-  docker_process_sql --database=mysql <<-EOSQL
-    CREATE DATABASE \`$1\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-    GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER, CREATE TEMPORARY TABLES ON \`$1\`.* TO '$DATABASE_USERNAME'@'%';
-EOSQL
+  # Database creation
+  mysql -u root --password=${MARIADB_PASSWORD} -e "CREATE DATABASE IF NOT EXISTS ${1} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+  mysql -u root --password=${MARIADB_PASSWORD} -e "GRANT ALL PRIVILEGES ON ${1}.* TO '${MARIADB_USER}'@'%' IDENTIFIED BY '${MARIADB_PASSWORD}';"
+  mysql -u root --password=${MARIADB_PASSWORD} -e "GRANT ALL PRIVILEGES ON ${1}.* TO '${MARIADB_USER}'@'localhost' IDENTIFIED BY '${MARIADB_PASSWORD}';"
 }
 
-mysql_note "Creating user ${DATABASE_USERNAME}"
-docker_process_sql --database=mysql <<<"CREATE USER '$DATABASE_USERNAME'@'%' IDENTIFIED BY '$DATABASE_PASSWORD';"
+echo "Creating user"
+# User creation
+mysql -u root --password=${MARIADB_PASSWORD} -e "CREATE USER IF NOT EXISTS '${MARIADB_USER}' IDENTIFIED BY '${MARIADB_PASSWORD}';"
 
-mysql_note "Creating databases"
+echo "Creating databases"
 for DATABASE_NAME in $DATABASE_APP $DATABASE_GITEA; do
-  mysql_note "Creating ${DATABASE_NAME}"
+  echo "  -> Creating ${DATABASE_NAME}"
   _create_database $DATABASE_NAME
 done
+
+# Grant permissions to access and use the MySQL server
+mysql -u root --password=${MARIADB_PASSWORD} -e "GRANT ALL PRIVILEGES ON *.* TO '${MARIADB_USER}'@'%' IDENTIFIED BY '${MARIADB_PASSWORD}';"
+mysql -u root --password=${MARIADB_PASSWORD} -e "GRANT ALL PRIVILEGES ON *.* TO '${MARIADB_USER}'@'localhost' IDENTIFIED BY '${MARIADB_PASSWORD}';"

@@ -19,6 +19,13 @@ Docker Containers (as microservice approach), which are executed with `docker-co
 - [**Gitea**](https://gitea.io/) Repository and Issue tracker.
 - [**MailCatcher**](https://mailcatcher.me/) to catch all mail and stores it for display.
 
+## Initial services configuration
+
+### Gitea
+
+- To access gitea from your development environment you should set `SSH-Server-Domain` and `Gitea-Base-URL` to an appropriate resolvable name or IP address.
+- Add the administration user on setup or the first user registerd will be the admin
+
 ## Command line usage
 
 **Since everything that has to do with the stack, only runs in the container, you have to put the commands into the corresponding container.**
@@ -40,6 +47,18 @@ To execute a PHP script:
 
 ```bash
 docker exec php /usr/local/bin/php /var/www/backend/public/index.php
+```
+
+Creating database dumps:
+
+```bash
+docker exec db sh -c 'exec mysqldump --all-databases -uroot -p"$MARIADB_ROOT_PASSWORD"' > /some/path/on/your/host/all-databases.sql
+```
+
+Restoring data from dump files
+
+```bash
+docker exec -i db sh -c 'exec mysql -uroot -p"$MARIADB_ROOT_PASSWORD"' < /some/path/on/your/host/all-databases.sql
 ```
 
 ## License

@@ -74,6 +74,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
     ports:
       - "${GITEA_PORT}:${GITEA_PORT}"
+      - "2222:2222"
     networks:
       - dev
     depends_on:
@@ -130,7 +131,7 @@ services:
     build:
       context: .
       dockerfile: ./.docker/php/Dockerfile
-      target: development
+      target: ${TARGET}
     stdin_open: true # docker run -i
     tty: true        # docker run -t
     container_name: "php"
@@ -147,7 +148,7 @@ services:
     build:
       context: .
       dockerfile: ./.docker/nodejs/Dockerfile
-      target: development
+      target: ${TARGET}
     container_name: "nodejs"
     restart: unless-stopped
     stdin_open: true # docker run -i

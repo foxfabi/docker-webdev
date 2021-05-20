@@ -155,7 +155,7 @@ services:
     networks:
       - dev
     ports:
-      - '7490:7090'
+      - '${NODE_PORT}:7090'
     volumes:
       - ./src/frontend:/var/www/frontend
       - /etc/timezone:/etc/timezone:ro

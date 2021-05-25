@@ -46,7 +46,7 @@ Add loki to docker container:
         loki-url: "http://loki:3100/"
 ```
 
-Follow the steps described in [Monitoring your docker container’s logs the Loki way](https://itnext.io/monitoring-your-docker-containers-logs-the-loki-way-e9fdbae6bafd).
+Additional are described in [Monitoring your docker container’s logs the Loki way](https://itnext.io/monitoring-your-docker-containers-logs-the-loki-way-e9fdbae6bafd) and [Log Aggregation With Grafana+Loki+Promtail](https://cloudsbaba.com/log-aggregation-with-grafanalokipromtail/).
 
 ## Command line usage
 

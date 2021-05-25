@@ -16,6 +16,8 @@ Docker Containers (as microservice approach), which are executed with `docker-co
 - [**MariaDB**](https://mariadb.org/) SQL database.
 - [**Adminer**](https://www.adminer.org/) for database administration.
 - [**Grafana**](https://grafana.com/) logging.
+  - Loki: log aggregator
+  - Promtail: Agent which will read up the contents of the log file/files and ship those logs to Loki
 - [**Gitea**](https://gitea.io/) Repository and Issue tracker.
 - [**MailCatcher**](https://mailcatcher.me/) to catch all mail and stores it for display.
 
@@ -26,6 +28,25 @@ Docker Containers (as microservice approach), which are executed with `docker-co
 - To access gitea from your development environment you should set `SSH-Server-Domain` and `Gitea-Base-URL` to an appropriate resolvable name or IP address.
 - Add the administration user on setup or the first user registered will be the admin
 - Gitea supports Git over SSH. You might be familiar with this when you work with GitHub repositories. You need to create a key pair on your computer and add the public key under _Your Settings_ -> _SSH / GPG Keys_ . Copy and paste the public key into the Content text field then click the green Add Key button.
+
+### Logging
+
+The Docker plugin must be installed on each Docker host that will be running containers you want to collect logs from. [Read Docker Driver Client](https://grafana.com/docs/loki/latest/clients/docker-driver/)
+
+```bash
+docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
+```
+
+Add loki to docker container:
+
+```byaml
+    logging:
+      driver: loki
+      options:
+        loki-url: "http://loki:3100/"
+```
+
+Follow the steps described in [Monitoring your docker container’s logs the Loki way](https://itnext.io/monitoring-your-docker-containers-logs-the-loki-way-e9fdbae6bafd).
 
 ## Command line usage
 

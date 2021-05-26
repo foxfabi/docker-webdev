@@ -165,6 +165,7 @@ services:
   nginx:
     build: ./.docker/nginx/
     container_name: "nginx"
+    restart: unless-stopped
     ports:
       - "${NGINX_PORT}:80"
     depends_on:
@@ -174,3 +175,7 @@ services:
       - ./src/backend:/var/www/backend
     networks:
       - dev
+    logging:
+      driver: loki
+      options:
+        loki-url: "http://loki:3100/"

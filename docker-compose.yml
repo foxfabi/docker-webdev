@@ -19,6 +19,12 @@ services:
       - ./.docker/loki-config.yaml:/etc/loki/local-config.yaml
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+    # For this to work you need to install the logging driver
+    # See https://grafana.com/docs/loki/latest/clients/docker-driver/
+    logging:
+      driver: loki
+      options:
+        loki-url: "http://localhost:3100/loki/api/v1/push"
 
   promtail:
     image: grafana/promtail:2.0.0
@@ -28,9 +34,11 @@ services:
       - dev
     volumes:
       - /var/log:/var/log
-      - ./.docker/promtail-config.yaml:/etc/loki/local-config.yaml
+      - ./.docker/promtail-config.yaml:/etc/promtail/config.yml
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - loki
 
   grafana:
     image: grafana/grafana:latest
@@ -175,7 +183,9 @@ services:
       - ./src/backend:/var/www/backend
     networks:
       - dev
+    # For this to work you need to install the logging driver
+    # See https://grafana.com/docs/loki/latest/clients/docker-driver/
     logging:
       driver: loki
       options:
-        loki-url: "http://loki:3100/"
+        loki-url: "http://loki:3100/loki/api/v1/push"

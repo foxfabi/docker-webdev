@@ -31,6 +31,8 @@ Docker Containers (as microservice approach), which are executed with `docker-co
 
 ### Logging
 
+Configure the Loki data source within Grafana.
+
 The Docker plugin must be installed on each Docker host that will be running containers you want to collect logs from. [Read Docker Driver Client](https://grafana.com/docs/loki/latest/clients/docker-driver/)
 
 ```bash

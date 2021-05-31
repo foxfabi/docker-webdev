@@ -57,7 +57,8 @@ Add loki to docker container:
 Additional setup steps and informations:
 
 * [Monitoring your docker container’s logs the Loki way](https://itnext.io/monitoring-your-docker-containers-logs-the-loki-way-e9fdbae6bafd) and [Log Aggregation With Grafana+Loki+Promtail](https://cloudsbaba.com/log-aggregation-with-grafanalokipromtail/)
-*  [Loki Syslog All-In-One example](https://computingforgeeks.com/forward-logs-to-grafana-loki-using-promtail/)
+* [Loki Syslog All-In-One example](https://computingforgeeks.com/forward-logs-to-grafana-loki-using-promtail/)
+* [Running loki and grafana on docker swarm](https://drailing.net/2020/06/running-loki-and-grafana-on-docker-swarm/)
 
 ## Command line usage
 

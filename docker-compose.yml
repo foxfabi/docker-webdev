@@ -24,7 +24,7 @@ services:
     logging:
       driver: loki
       options:
-        loki-url: "http://localhost:3100/loki/api/v1/push"
+        loki-url: "http://loki:3100/loki/api/v1/push"
 
   promtail:
     image: grafana/promtail:2.0.0
@@ -135,7 +135,7 @@ services:
     logging:
       driver: loki
       options:
-        loki-url: "http://loki:3100/"
+        loki-url: "http://loki:3100/loki/api/v1/push"
 
   mail:
     image: schickling/mailcatcher:latest
@@ -171,7 +171,7 @@ services:
     logging:
       driver: loki
       options:
-        loki-url: "http://loki:3100/"
+        loki-url: "http://loki:3100/loki/api/v1/push"
 
   nodejs:
     build:
@@ -193,7 +193,7 @@ services:
     logging:
       driver: loki
       options:
-        loki-url: "http://loki:3100/"
+        loki-url: "http://loki:3100/loki/api/v1/push"
 
   nginx:
     build: ./.docker/nginx/

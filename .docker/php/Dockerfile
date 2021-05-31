@@ -58,7 +58,9 @@ RUN docker-php-source extract &&        \
     docker-php-source delete && \
     rm -rf /var/lib/apt/lists/* $HOME/.composer/*-old.phar /usr/bin/qemu-*-static
 
-RUN echo "date.timezone=Europe/Zurich" >> $PHP_INI_DIR/php.ini
+# install sendmail package
+RUN apt-get update && apt-get install -y sendmail sendmail-bin
+
 # copy the Composer PHAR from the Composer image into the PHP image
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www/backend
@@ -90,12 +92,19 @@ RUN chmod 755 /usr/local/bin/phpdoc
 # PHPUnit
 ADD https://phar.phpunit.de/phpunit-6.5.phar /usr/local/bin/phpunit
 RUN chmod 755 /usr/local/bin/phpunit
-# XDebug
+
+# PHP configuration
+COPY $PHP_INI_DIR/php.ini-development $PHP_INI_DIR/php.ini
 RUN echo "[xdebug]" >> $PHP_INI_DIR/php.ini && \
   echo "xdebug.mode=debug" >> $PHP_INI_DIR/php.ini && \
   echo "xdebug.start_with_request = yes" >> $PHP_INI_DIR/php.ini && \
   echo "xdebug.client_port = 9000" >> $PHP_INI_DIR/php.ini && \
   echo 'xdebug.idekey = "VSCODE"' >> $PHP_INI_DIR/php.ini
+RUN echo "[sendmail]" >> $PHP_INI_DIR/php.ini && \
+  echo "smtp_server=$MAIL_SERVER" >> $PHP_INI_DIR/php.ini && \
+  echo "smtp_port=$MAIL_PORT" >> $PHP_INI_DIR/php.ini
+RUN echo "date.timezone=Europe/Zurich" >> $PHP_INI_DIR/php.ini
+
 CMD [ "/usr/local/bin/php", "-S", "0.0.0.0:7409", "-t", "/var/www/backend/public/"]
 #EXPOSE 7409
 #CMD ["/usr/local/bin/php", "/var/www/backend/public/server.php"]
@@ -125,6 +134,9 @@ COPY ./src/backend .
 # I serve my applications with Swoole and nginx reverse proxy(10 times better performance this way)
 # So I use the php-cli image.
 COPY --from=builder /usr/local/lib/php/extensions /usr/local/lib/php/extensions
+# PHP configuration
+COPY $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini
+RUN echo "date.timezone=Europe/Zurich" >> $PHP_INI_DIR/php.ini
 # You may remove extensions that you don't need from here.
 # RUN apk add --no-cache docker-php-ext-enable msgpack bcmath gd gmp sockets swoole
 #HEALTHCHECK CMD curl --fail http://localhost:9501/ || exit 1

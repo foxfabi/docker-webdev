@@ -2,3 +2,4 @@ storage/
 **/node_modules/
 **/vendor/
 **/dist/
+.gitconfig

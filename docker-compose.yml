@@ -11,7 +11,7 @@ services:
     restart: unless-stopped
     env_file: ./.env
     ports:
-      - "127.0.0.1:3100:3100"
+      - "${LOKI_PORT}:3100"
     # command: -config.file=/etc/loki/local-config.yaml
     networks:
       - dev
@@ -72,7 +72,7 @@ services:
         tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
       driver: loki
       options:
-        loki-url: "http://127.0.0.1:3100/loki/api/v1/push"
+        loki-url: "http://loki:3100/loki/api/v1/push"
         loki-retries: "5"
         loki-batch-size: "400"
 
@@ -137,7 +137,7 @@ services:
     logging:
       driver: loki
       options:
-        loki-url: "http://127.0.0.1:3100/loki/api/v1/push"
+        loki-url: "http://loki:3100/loki/api/v1/push"
 
   mail:
     image: schickling/mailcatcher:latest
@@ -153,7 +153,7 @@ services:
     logging:
       driver: loki
       options:
-        loki-url: "http://127.0.0.1:3100/loki/api/v1/push"
+        loki-url: "http://loki:3100/loki/api/v1/push"
 
   php:
     restart: unless-stopped
@@ -173,7 +173,7 @@ services:
     logging:
       driver: loki
       options:
-        loki-url: "http://127.0.0.1:3100/loki/api/v1/push"
+        loki-url: "http://loki:3100/loki/api/v1/push"
 
   nodejs:
     build:
@@ -195,7 +195,7 @@ services:
     logging:
       driver: loki
       options:
-        loki-url: "http://127.0.0.1:3100/loki/api/v1/push"
+        loki-url: "http://loki:3100/loki/api/v1/push"
 
   nginx:
     build: ./.docker/nginx/
@@ -215,4 +215,4 @@ services:
     logging:
       driver: loki
       options:
-        loki-url: "http://127.0.0.1:3100/loki/api/v1/push"
+        loki-url: "http://loki:3100/loki/api/v1/push"

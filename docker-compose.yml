@@ -30,9 +30,13 @@ services:
     image: grafana/promtail:2.0.0
     container_name: "promtail"
     restart: unless-stopped
+    env_file: ./.env
+    ports:
+      - "${PROMTAIL_PORT}:7980"
     networks:
       - dev
     volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers
       - /var/log:/var/log
       - ./.docker/promtail-config.yaml:/etc/promtail/config.yml
       - /etc/timezone:/etc/timezone:ro
@@ -62,6 +66,10 @@ services:
     depends_on:
       - loki
       - promtail
+    logging:
+      driver: loki
+      options:
+        loki-url: "http://loki:3100/"
 
   gitea:
     image: gitea/gitea:latest
@@ -82,7 +90,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
     ports:
       - "${GITEA_PORT}:${GITEA_PORT}"
-      - "2222:2222"
+      - "2222:22"
     networks:
       - dev
     depends_on:
@@ -121,6 +129,10 @@ services:
       - ./.docker/db/init:/docker-entrypoint-initdb.d:ro
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+    logging:
+      driver: loki
+      options:
+        loki-url: "http://loki:3100/"
 
   mail:
     image: schickling/mailcatcher:latest
@@ -133,6 +145,10 @@ services:
     volumes:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+    logging:
+      driver: loki
+      options:
+        loki-url: "http://loki:3100/"
 
   php:
     restart: unless-stopped
@@ -148,9 +164,11 @@ services:
     networks:
       - dev
     ports:
-      - '${PHPSRV_PORT}:${PHPSRV_PORT}'
-    expose:
-      - 9000
+      - '${PHPSRV_PORT}:9000'
+    logging:
+      driver: loki
+      options:
+        loki-url: "http://loki:3100/"
 
   nodejs:
     build:
@@ -169,6 +187,10 @@ services:
       - ./src/frontend:/var/www/frontend
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+    logging:
+      driver: loki
+      options:
+        loki-url: "http://loki:3100/"
 
   nginx:
     build: ./.docker/nginx/

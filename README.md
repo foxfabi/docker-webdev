@@ -43,16 +43,18 @@ Add loki to docker container:
     logging:
       driver: loki
       options:
-        loki-url: "http://loki:3100/"
+        loki-url: "http://loki:3100/loki/api/v1/push"
+      driver: "json-file"
+      options:
+        tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
 ```
 
 * [Check loki URL: http://<ip_address>:7431/metrics](http://localhost:7431/metrics)
 * [Check promtail URL: http://<ip_address>:9080](http://localhost:7431/metrics)
-*
+
 Additional setup steps and informations:
 
-* [Monitoring your docker container’s logs the Loki way](https://itnext.io/monitoring-your-docker-containers-logs-the-loki-way-e9fdbae6bafd) and
-*  [Log Aggregation With Grafana+Loki+Promtail](https://cloudsbaba.com/log-aggregation-with-grafanalokipromtail/)
+* [Monitoring your docker container’s logs the Loki way](https://itnext.io/monitoring-your-docker-containers-logs-the-loki-way-e9fdbae6bafd) and [Log Aggregation With Grafana+Loki+Promtail](https://cloudsbaba.com/log-aggregation-with-grafanalokipromtail/)
 *  [Loki Syslog All-In-One example](https://computingforgeeks.com/forward-logs-to-grafana-loki-using-promtail/)
 
 ## Command line usage

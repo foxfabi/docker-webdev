@@ -98,6 +98,7 @@ services:
         ipv4_address: 192.10.100.5
     depends_on:
       - db
+      - loki
 
   adminer:
     image: adminer:latest
@@ -173,14 +174,10 @@ services:
     networks:
       dev: # this is the place where we assign the static ipv4 address
         ipv4_address: 192.10.100.9
+    expose:
+      - 9000
     ports:
       - '${PHPSRV_PORT}:7409'
-    # depends_on:
-    #   - loki
-    # logging:
-    #   driver: loki
-    #   options:
-    #     loki-url:  "http://loki:3100/loki/api/v1/push"
 
   nodejs:
     #<<: *logging

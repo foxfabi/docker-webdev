@@ -2,7 +2,7 @@
 FROM composer:1.9.3 AS composer
 ENV COMPOSER_ALLOW_SUPERUSER 1
 
-FROM php:7.4-cli-buster AS base
+FROM php:7.4-fpm-buster AS base
 ENV COMPOSER_ALLOW_SUPERUSER 1
 ENV LC_ALL C.UTF-8
 #RUN pwd && ls -la
@@ -57,15 +57,11 @@ RUN docker-php-source extract &&        \
     rm -f swoole.tar.gz $HOME/.composer/*-old.phar && \
     docker-php-source delete && \
     rm -rf /var/lib/apt/lists/* $HOME/.composer/*-old.phar /usr/bin/qemu-*-static
-
-# install sendmail package
-RUN apt-get update && apt-get install -y sendmail sendmail-bin
-
 # copy the Composer PHAR from the Composer image into the PHP image
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www/backend
 COPY ./src/backend .
-RUN pwd && ls -la
+# RUN pwd && ls -la
 RUN composer install \
     --no-interaction \
     --no-scripts \
@@ -92,18 +88,21 @@ RUN chmod 755 /usr/local/bin/phpdoc
 # PHPUnit
 ADD https://phar.phpunit.de/phpunit-6.5.phar /usr/local/bin/phpunit
 RUN chmod 755 /usr/local/bin/phpunit
-
+# Install sendmail package
+RUN apt-get update && apt-get install -y sendmail sendmail-bin
 # PHP configuration
-COPY $PHP_INI_DIR/php.ini-development $PHP_INI_DIR/php.ini
-RUN echo "[xdebug]" >> $PHP_INI_DIR/php.ini && \
-  echo "xdebug.mode=debug" >> $PHP_INI_DIR/php.ini && \
-  echo "xdebug.start_with_request = yes" >> $PHP_INI_DIR/php.ini && \
-  echo "xdebug.client_port = 9000" >> $PHP_INI_DIR/php.ini && \
-  echo 'xdebug.idekey = "VSCODE"' >> $PHP_INI_DIR/php.ini
-RUN echo "[sendmail]" >> $PHP_INI_DIR/php.ini && \
-  echo "smtp_server=$MAIL_SERVER" >> $PHP_INI_DIR/php.ini && \
-  echo "smtp_port=$MAIL_PORT" >> $PHP_INI_DIR/php.ini
-RUN echo "date.timezone=Europe/Zurich" >> $PHP_INI_DIR/php.ini
+RUN docker-php-source extract && \
+    cp '/usr/src/php/php.ini-development' $PHP_INI_DIR/php.ini && \
+    echo "date.timezone=${TIMEZONE}" >> $PHP_INI_DIR/conf.d/timezone.ini && \
+    echo "[xdebug]" >> $PHP_INI_DIR/conf.d/xdebug.ini && \
+    echo "xdebug.mode=debug" >> $PHP_INI_DIR/conf.d/xdebug.ini && \
+    echo "xdebug.start_with_request = yes" >> $PHP_INI_DIR/conf.d/xdebug.ini && \
+    echo "xdebug.client_port = 9000" >> $PHP_INI_DIR/conf.d/xdebug.ini && \
+    echo 'xdebug.idekey = "VSCODE"' >> $PHP_INI_DIR/conf.d/xdebug.ini && \
+    echo "[sendmail]" >> $PHP_INI_DIR/conf.d/sendmail.ini && \
+    echo "smtp_server=${MAIL_SERVER}" >> $PHP_INI_DIR/conf.d/sendmail.ini && \
+    echo "smtp_port=${MAIL_PORT}" >> $PHP_INI_DIR/conf.d/sendmail.ini && \
+    docker-php-source delete
 
 CMD [ "/usr/local/bin/php", "-S", "0.0.0.0:7409", "-t", "/var/www/backend/public/"]
 #EXPOSE 7409
@@ -135,10 +134,12 @@ COPY ./src/backend .
 # So I use the php-cli image.
 COPY --from=builder /usr/local/lib/php/extensions /usr/local/lib/php/extensions
 # PHP configuration
-COPY $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini
-RUN echo "date.timezone=Europe/Zurich" >> $PHP_INI_DIR/php.ini
+RUN docker-php-source extract && \
+    cp '/usr/src/php/php.ini-production' $PHP_INI_DIR/php.ini && \
+    echo "date.timezone=${TIMEZONE}" >> $PHP_INI_DIR/conf.d/timezone.ini && \
+    docker-php-source delete
 # You may remove extensions that you don't need from here.
-# RUN apk add --no-cache docker-php-ext-enable msgpack bcmath gd gmp sockets swoole
+# RUN apk add --no-cache docker-php-ext-enable gd msgpack bcmath gd gmp sockets swoole
 #HEALTHCHECK CMD curl --fail http://localhost:9501/ || exit 1
 # EXPOSE 9501
 CMD [ "/usr/local/bin/php", "-S", "0.0.0.0:7409", "-t", "/var/www/backend/public/"]

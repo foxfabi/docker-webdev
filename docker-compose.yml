@@ -2,18 +2,18 @@ version: "3.7"
 
 networks:
   dev: # virtual network name
-    # driver: bridge
-    # ipam:
-    #  config: # here, we define our ip space
-    #    - subnet: 192.10.100.0/28
+    driver: bridge
+    ipam:
+     config: # here, we define our ip space
+       - subnet: 192.10.100.0/28
 
 # this is a YAML anchor to avoid repetition
 x-logging: &logging
   logging:
     driver: loki
     options: # note: the ip is the ip we will assign later to loki in this file
-      #loki-url: "http://192.10.100.2:3100/loki/api/v1/push"
-      loki-url: "http://loki:3100/loki/api/v1/push"
+      loki-url: "http://192.10.100.2:3100/loki/api/v1/push"
+      # loki-url: "http://loki:3100/loki/api/v1/push"
 
 services:
   loki:
@@ -26,7 +26,7 @@ services:
     # command: -config.file=/etc/loki/local-config.yaml
     networks:
       dev: # this is the place where we assign the static ipv4 address
-        # ipv4_address: 192.10.100.2
+        ipv4_address: 192.10.100.2
     volumes:
       - ./.docker/loki-config.yaml:/etc/loki/local-config.yaml
       - /etc/timezone:/etc/timezone:ro
@@ -41,7 +41,7 @@ services:
       - "${PROMTAIL_PORT}:7980"
     networks:
       dev: # this is the place where we assign the static ipv4 address
-        # ipv4_address: 192.10.100.3
+        ipv4_address: 192.10.100.3
     volumes:
       - /var/log:/var/log
       - ./.docker/promtail-config.yaml:/etc/promtail/config.yml
@@ -57,7 +57,7 @@ services:
       - "${GF_PORT}:3000"
     networks:
       dev: # this is the place where we assign the static ipv4 address
-        # ipv4_address: 192.10.100.4
+        ipv4_address: 192.10.100.4
     volumes:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
@@ -95,7 +95,7 @@ services:
       - "2222:22"
     networks:
       dev: # this is the place where we assign the static ipv4 address
-        # ipv4_address: 192.10.100.5
+        ipv4_address: 192.10.100.5
     depends_on:
       - db
 
@@ -108,7 +108,7 @@ services:
       - '${ADMINER_PORT}:8080'
     networks:
       dev: # this is the place where we assign the static ipv4 address
-        # ipv4_address: 192.10.100.6
+        ipv4_address: 192.10.100.6
     volumes:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
@@ -125,7 +125,7 @@ services:
       - '3306:3306'
     networks:
       dev: # this is the place where we assign the static ipv4 address
-        # ipv4_address: 192.10.100.7
+        ipv4_address: 192.10.100.7
     environment:
       MARIADB_ROOT_PASSWORD: ${DATABASE_PASSWORD}
       MARIADB_USER: ${DATABASE_USERNAME}
@@ -149,7 +149,7 @@ services:
       - "${WEBMAIL_PORT}:1080"
     networks:
       dev: # this is the place where we assign the static ipv4 address
-        # ipv4_address: 192.10.100.8
+        ipv4_address: 192.10.100.8
     volumes:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
@@ -172,7 +172,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
     networks:
       dev: # this is the place where we assign the static ipv4 address
-        # ipv4_address: 192.10.100.9
+        ipv4_address: 192.10.100.9
     ports:
       - '${PHPSRV_PORT}:7409'
     # depends_on:
@@ -195,19 +195,13 @@ services:
     tty: true        # docker run -t
     networks:
       dev: # this is the place where we assign the static ipv4 address
-        # ipv4_address: 192.10.100.10
+        ipv4_address: 192.10.100.10
     ports:
       - '${NODE_PORT}:7090'
     volumes:
       - ./src/frontend:/var/www/frontend
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
-    # depends_on:
-    #   - loki
-    # logging:
-    #   driver: loki
-    #   options:
-    #     loki-url: "http://loki:3100/loki/api/v1/push"
 
   nginx:
     <<: *logging
@@ -227,8 +221,4 @@ services:
       - /etc/localtime:/etc/localtime:ro
     networks:
       dev: # this is the place where we assign the static ipv4 address
-        # ipv4_address: 192.10.100.11
-    # logging:
-    #   driver: loki
-    #   options:
-    #     loki-url:  "http://loki:3100/loki/api/v1/push"
+        ipv4_address: 192.10.100.11

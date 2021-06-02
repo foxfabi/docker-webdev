@@ -62,6 +62,8 @@ COPY --from=composer /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www/backend
 COPY ./src/backend .
 # RUN pwd && ls -la
+# COPY ./.docker/php/docker-entrypoint.sh /usr/bin/start-container
+# RUN chmod +x /usr/bin/start-container
 RUN composer install \
     --no-interaction \
     --no-scripts \
@@ -103,11 +105,11 @@ RUN docker-php-source extract && \
     echo "smtp_server=${MAIL_SERVER}" >> $PHP_INI_DIR/conf.d/sendmail.ini && \
     echo "smtp_port=${MAIL_PORT}" >> $PHP_INI_DIR/conf.d/sendmail.ini && \
     docker-php-source delete
-
-CMD [ "/usr/local/bin/php", "-S", "0.0.0.0:7409", "-t", "/var/www/backend/public/"]
+# ENTRYPOINT ["php-fpm"]
+# CMD [ "/usr/local/bin/php", "-S", "0.0.0.0:7409", "-t", "/var/www/backend/public/"]
 #EXPOSE 7409
 #CMD ["/usr/local/bin/php", "/var/www/backend/public/server.php"]
-
+ENTRYPOINT ["start-container"]
 
 # Build the backend
 FROM base AS builder
@@ -142,6 +144,8 @@ RUN docker-php-source extract && \
 # RUN apk add --no-cache docker-php-ext-enable gd msgpack bcmath gd gmp sockets swoole
 #HEALTHCHECK CMD curl --fail http://localhost:9501/ || exit 1
 # EXPOSE 9501
-CMD [ "/usr/local/bin/php", "-S", "0.0.0.0:7409", "-t", "/var/www/backend/public/"]
+# ENTRYPOINT ["php-fpm"]
+# CMD [ "/usr/local/bin/php", "-S", "0.0.0.0:7409", "-t", "/var/www/backend/public/"]
 #EXPOSE 7409
 #CMD ["/usr/local/bin/php", "/var/www/backend/public/server.php"] # swoole
+# ENTRYPOINT ["start-container"]

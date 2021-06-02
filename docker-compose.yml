@@ -70,6 +70,9 @@ services:
       GF_USERS_ALLOW_ORG_CREATE: ${GF_USERS_ALLOW_ORG_CREATE}
       GF_AUTH_ANONYMOUS_ENABLED: ${GF_AUTH_ANONYMOUS_ENABLED}
       GF_INSTALL_PLUGINS: ${GF_INSTALL_PLUGINS}
+    depends_on:
+      - promtail
+      - loki
 
   gitea:
     <<: *logging
@@ -167,10 +170,12 @@ services:
     container_name: "php.${APP_NAME}"
     restart: unless-stopped
     env_file: ./.env
+    entrypoint: sh /bin/entrypoint.sh php-fpm
     volumes:
       - ./src/backend:/var/www/backend
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+      - ./.docker/php/docker-entrypoint.sh:/bin/entrypoint.sh:ro
     networks:
       dev: # this is the place where we assign the static ipv4 address
         ipv4_address: 192.10.100.9

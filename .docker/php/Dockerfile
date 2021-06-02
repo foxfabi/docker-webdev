@@ -104,6 +104,8 @@ RUN docker-php-source extract && \
     echo "[sendmail]" >> $PHP_INI_DIR/conf.d/sendmail.ini && \
     echo "smtp_server=${MAIL_SERVER}" >> $PHP_INI_DIR/conf.d/sendmail.ini && \
     echo "smtp_port=${MAIL_PORT}" >> $PHP_INI_DIR/conf.d/sendmail.ini && \
+    echo "log_errors = On" >> $PHP_INI_DIR/conf.d/log.ini && \
+    echo "error_log=/dev/stderr" >> $PHP_INI_DIR/conf.d/log.ini && \
     docker-php-source delete
 # ENTRYPOINT ["php-fpm"]
 # CMD [ "/usr/local/bin/php", "-S", "0.0.0.0:7409", "-t", "/var/www/backend/public/"]
@@ -139,6 +141,8 @@ COPY --from=builder /usr/local/lib/php/extensions /usr/local/lib/php/extensions
 RUN docker-php-source extract && \
     cp '/usr/src/php/php.ini-production' $PHP_INI_DIR/php.ini && \
     echo "date.timezone=${TIMEZONE}" >> $PHP_INI_DIR/conf.d/timezone.ini && \
+    echo "log_errors = On" >> $PHP_INI_DIR/conf.d/log.ini && \
+    echo "error_log=/dev/stderr" >> $PHP_INI_DIR/conf.d/log.ini && \
     docker-php-source delete
 # You may remove extensions that you don't need from here.
 # RUN apk add --no-cache docker-php-ext-enable gd msgpack bcmath gd gmp sockets swoole

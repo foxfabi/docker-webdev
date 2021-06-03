@@ -17,6 +17,8 @@ RUN echo "NodeJS Version:" "$(node -v)" && \
     echo "NPM Version:" "$(npm -v)"
 WORKDIR /var/www/frontend
 COPY ./src/frontend .
+# set port from .env file
+RUN npm config set port $NODE_PORT
 # use a lightweight init system
 ADD https://github.com/Yelp/dumb-init/releases/download/v1.1.1/dumb-init_1.1.1_amd64 /usr/local/bin/dumb-init
 RUN chmod +x /usr/local/bin/dumb-init

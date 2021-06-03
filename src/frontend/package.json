@@ -2,7 +2,10 @@
   "name": "frontend",
   "version": "1.0.0",
   "description": "Docker Application Frontend",
-  "main": "index.js",
+  "main": "server.js",
+  "config" : {
+    "port" : "8080"
+  },
   "scripts": {
     "lint": "node server.js",
     "serve": "node server.js",

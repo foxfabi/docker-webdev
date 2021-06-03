@@ -4,6 +4,8 @@
   "description": "Docker Application Frontend",
   "main": "index.js",
   "scripts": {
+    "lint": "node server.js",
+    "serve": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

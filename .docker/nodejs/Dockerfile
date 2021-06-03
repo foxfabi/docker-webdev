@@ -43,8 +43,8 @@ RUN npm config set unsafe-perm true &&      \
 #             --timeout=5s \
 #             --retries=6 \
 #             CMD curl --fail http://localhost:7090/ || exit 1
-ENTRYPOINT ["node"]
-CMD ["server.js"]
+ENTRYPOINT ["npm"]
+CMD ["run", "serve"]
 
 # Build the frontend
 FROM base AS builder
@@ -56,9 +56,12 @@ RUN npm ci
 # RUN npm run format
 RUN npm run lint
 RUN npm run test
-RUN npm run build
+# Build for production.
+RUN npm run build --production
+# Install `serve` to run the application.
+RUN npm install -g serve
 # get rid of any development dependencies
 RUN npm prune --production
-ENTRYPOINT ["node"]
-CMD ["server.js"]
+ENTRYPOINT ["npm"]
+CMD ["run", "serve", "-s build"]
 # FROM builder as production

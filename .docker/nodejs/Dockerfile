@@ -40,6 +40,8 @@ FROM base as development
 ENV NODE_ENV=development
 RUN npm config set unsafe-perm true &&      \
     npm install -g nodemon &&               \
+    # install the dotenv package from the npm as a dev dependencies
+    npm install dotenv --save-dev && \
     npm install eslint --save-dev
 # HEALTHCHECK --interval=5s \
 #             --timeout=5s \

@@ -17,13 +17,15 @@ RUN echo "NodeJS Version:" "$(node -v)" && \
     echo "NPM Version:" "$(npm -v)"
 WORKDIR /var/www/frontend
 COPY ./src/frontend .
+# use a lightweight init system
+ADD https://github.com/Yelp/dumb-init/releases/download/v1.1.1/dumb-init_1.1.1_amd64 /usr/local/bin/dumb-init
+RUN chmod +x /usr/local/bin/dumb-init
 
 # Lints Code
 FROM base AS linting
 ENV NODE_ENV=development
 RUN npm install
-ENTRYPOINT ["npm"]
-CMD ["run", "lint"]
+CMD ["dumb-init", "npm", "run", "lint"]
 
 # Runs Unit Tests
 # docker build --target unit-tests -t example-node:latest
@@ -43,8 +45,7 @@ RUN npm config set unsafe-perm true &&      \
 #             --timeout=5s \
 #             --retries=6 \
 #             CMD curl --fail http://localhost:7090/ || exit 1
-ENTRYPOINT ["npm"]
-CMD ["run", "serve"]
+CMD ["dumb-init", "npm", "run", "serve"]
 
 # Build the frontend
 FROM base AS builder
@@ -62,6 +63,5 @@ RUN npm run build --production
 RUN npm install -g serve
 # get rid of any development dependencies
 RUN npm prune --production
-ENTRYPOINT ["npm"]
-CMD ["run", "serve", "-s build"]
+CMD ["dumb-init", "npm", "run", "serve", "-s build"]
 # FROM builder as production

@@ -104,6 +104,7 @@ services:
       - loki
 
   adminer:
+    <<: *logging
     image: adminer:latest
     container_name: "adminer.${APP_NAME}"
     restart: unless-stopped
@@ -143,6 +144,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
 
   maildev:
+    <<: *logging
     image: djfarrelly/maildev
     container_name: "mail.${APP_NAME}"
     restart: unless-stopped
@@ -194,6 +196,7 @@ services:
       - maildev:maildev
 
   nodejs:
+    <<: *logging
     #<<: *logging
     build:
       context: .

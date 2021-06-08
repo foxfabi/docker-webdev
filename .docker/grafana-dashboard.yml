@@ -1,0 +1,115 @@
+{
+  "__inputs": [],
+  "__requires":
+    [
+      {
+        "type": "grafana",
+        "id": "grafana",
+        "name": "Grafana",
+        "version": "8.0.0",
+      },
+      { "type": "panel", "id": "logs", "name": "Logs", "version": "" },
+    ],
+  "annotations":
+    {
+      "list":
+        [
+          {
+            "builtIn": 1,
+            "datasource": "-- Grafana --",
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "type": "dashboard",
+          },
+        ],
+    },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels":
+    [
+      {
+        "datasource": null,
+        "gridPos": { "h": 9, "w": 12, "x": 0, "y": 0 },
+        "id": 2,
+        "options":
+          {
+            "dedupStrategy": "none",
+            "enableLogDetails": true,
+            "showLabels": false,
+            "showTime": false,
+            "sortOrder": "Ascending",
+            "wrapLogMessage": false,
+          },
+        "targets": [{ "expr": '{compose_service="php"}', "refId": "A" }],
+        "title": "PHP Log",
+        "type": "logs",
+      },
+      {
+        "datasource": null,
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+        "id": 8,
+        "options":
+          {
+            "dedupStrategy": "none",
+            "enableLogDetails": true,
+            "showLabels": false,
+            "showTime": false,
+            "sortOrder": "Ascending",
+            "wrapLogMessage": false,
+          },
+        "targets": [{ "expr": '{compose_service="nginx"}', "refId": "A" }],
+        "title": "NGINX Log",
+        "type": "logs",
+      },
+      {
+        "datasource": null,
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+        "id": 10,
+        "options":
+          {
+            "dedupStrategy": "none",
+            "enableLogDetails": true,
+            "showLabels": false,
+            "showTime": false,
+            "sortOrder": "Ascending",
+            "wrapLogMessage": false,
+          },
+        "targets": [{ "expr": '{compose_service="maildev"}', "refId": "A" }],
+        "title": "MailDev Log",
+        "type": "logs",
+      },
+      {
+        "datasource": null,
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 9 },
+        "id": 6,
+        "options":
+          {
+            "dedupStrategy": "none",
+            "enableLogDetails": true,
+            "showLabels": false,
+            "showTime": false,
+            "sortOrder": "Ascending",
+            "wrapLogMessage": false,
+          },
+        "targets": [{ "expr": '{compose_service="nodejs"}', "refId": "A" }],
+        "title": "Node.js Log",
+        "type": "logs",
+      },
+    ],
+  "refresh": "",
+  "schemaVersion": 30,
+  "style": "dark",
+  "tags": [],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Dev.DashBoard",
+  "uid": "x3CPXU6Mk",
+  "version": 2,
+}

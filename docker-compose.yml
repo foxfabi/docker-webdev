@@ -154,7 +154,7 @@ services:
       - "${SMTP_PORT}:25"
       - "${WEBMAIL_PORT}:80"
     networks:
-      cmet: # this is the place where we assign the static ipv4 address
+      dev: # this is the place where we assign the static ipv4 address
         ipv4_address: 192.10.100.8
     volumes:
       - /etc/timezone:/etc/timezone:ro
@@ -188,7 +188,9 @@ services:
     expose:
       - 9000
     ports:
-      - '${PHPSRV_PORT}:${PHPSRV_PORT}'
+      - '${API_PORT}:${API_PORT}'
+    links:
+      - maildev:maildev
 
   nodejs:
     #<<: *logging
@@ -216,7 +218,7 @@ services:
 
   nginx:
     <<: *logging
-    build: ./.docker/nginx/
+    image: nginx
     container_name: "nginx.${APP_NAME}"
     restart: unless-stopped
     env_file: ./.env
@@ -231,10 +233,9 @@ services:
       - php
       - loki
     volumes:
+      - ./.docker/nginx/templates:/etc/nginx/templates:rw,cached
       - ./src/frontend:/var/www/frontend
       - ./src/backend:/var/www/backend
-      # - ./.docker/nginx/default.conf:/etc/nginx/conf.d/site.conf
-      - ./.docker/nginx/templates:/etc/nginx/templates
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     networks:

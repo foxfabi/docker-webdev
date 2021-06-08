@@ -178,6 +178,7 @@ services:
       LISTEN: ${API_PORT}
     entrypoint: sh /bin/entrypoint.sh php-fpm
     volumes:
+      - ./.docker/php/msmtprc:/etc/msmtprc:ro
       - ./src/backend:/var/www/backend
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro

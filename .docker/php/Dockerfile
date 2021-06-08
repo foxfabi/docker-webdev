@@ -91,19 +91,24 @@ RUN chmod 755 /usr/local/bin/phpdoc
 ADD https://phar.phpunit.de/phpunit-6.5.phar /usr/local/bin/phpunit
 RUN chmod 755 /usr/local/bin/phpunit
 # Install sendmail package
-RUN apt-get update && apt-get install -y sendmail sendmail-bin
+RUN apt-get update && apt-get install -y msmtp msmtp-mta mailutils
 # PHP configuration
 RUN docker-php-source extract && \
     cp '/usr/src/php/php.ini-development' $PHP_INI_DIR/php.ini && \
     echo "date.timezone=${TIMEZONE}" >> $PHP_INI_DIR/conf.d/timezone.ini && \
+    # XDEBUG PHP Config
     echo "[xdebug]" >> $PHP_INI_DIR/conf.d/xdebug.ini && \
     echo "xdebug.mode=debug" >> $PHP_INI_DIR/conf.d/xdebug.ini && \
     echo "xdebug.start_with_request = yes" >> $PHP_INI_DIR/conf.d/xdebug.ini && \
     echo "xdebug.client_port = 9000" >> $PHP_INI_DIR/conf.d/xdebug.ini && \
     echo 'xdebug.idekey = "VSCODE"' >> $PHP_INI_DIR/conf.d/xdebug.ini && \
+    # Sendmail Config
     echo "[sendmail]" >> $PHP_INI_DIR/conf.d/sendmail.ini && \
-    echo "smtp_server=${MAIL_SERVER}" >> $PHP_INI_DIR/conf.d/sendmail.ini && \
-    echo "smtp_port=${MAIL_PORT}" >> $PHP_INI_DIR/conf.d/sendmail.ini && \
+    echo "smtp_server=${SMTP_SERVER}" >> $PHP_INI_DIR/conf.d/sendmail.ini && \
+    echo "smtp_port=${SMTP_PORT}" >> $PHP_INI_DIR/conf.d/sendmail.ini && \
+    #echo "sendmail_path=sendmail -i -t" >> $PHP_INI_DIR/conf.d/sendmail.ini && \
+    echo "sendmail_path = \"/usr/bin/msmtp -C /etc/msmtprc -t\"" >> $PHP_INI_DIR/conf.d/sendmail.ini && \
+    # Log Config
     echo "log_errors = On" >> $PHP_INI_DIR/conf.d/log.ini && \
     echo "error_log=/dev/stderr" >> $PHP_INI_DIR/conf.d/log.ini && \
     docker-php-source delete

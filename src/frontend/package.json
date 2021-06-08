@@ -9,10 +9,13 @@
     "env-windows": "(for /F \"tokens=*\" %i in (.env) do set %i)",
     "start-linux": "npm run env-linux && npm start",
     "start-windows": "npm run env-windows && && npm start",
-    "lint": "node server.js",
-    "serve": "node server.js",
+    "lint": "node -r dotenv/config server.js",
+    "serve": "node -r dotenv/config server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Fabian Dennler",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^10.0.0"
+  }
 }

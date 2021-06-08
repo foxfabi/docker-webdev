@@ -211,7 +211,7 @@ services:
       dev: # this is the place where we assign the static ipv4 address
         ipv4_address: 192.10.100.10
     ports:
-      - '${NODE_PORT}:8080'
+      - '${NODE_PORT}:${NODE_PORT}'
     volumes:
       - ./src/frontend:/var/www/frontend
       - /etc/timezone:/etc/timezone:ro

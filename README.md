@@ -82,7 +82,7 @@ docker exec -it <container> /bin/bash
 To execute a PHP script:
 
 ```bash
-docker exec php /usr/local/bin/php /var/www/backend/public/index.php
+docker exec php,webdev /usr/local/bin/php /var/www/backend/public/index.php
 ```
 
 Creating database dumps:
@@ -97,6 +97,25 @@ Restoring data from dump files
 docker exec -i db sh -c 'exec mysql -uroot -p"$MARIADB_ROOT_PASSWORD"' < /some/path/on/your/host/all-databases.sql
 ```
 
+Start node development mode
+
+```bash
+docker exec -it nodejs.webdev npm run serve
+```
+
+Build Frontend
+
+```bash
+docker exec -it nodejs.webdev npm run build`
+```
+
+Add packages to node.js
+
+```bash
+docker exec -it nodejs.webdev npm install dotenv --save
+```
+
+-
 ## License
 
 MIT © Fabian Dennler

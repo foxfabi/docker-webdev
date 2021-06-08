@@ -87,14 +87,14 @@ services:
       GITEA__database__USER: ${DATABASE_USERNAME}
       GITEA__database__PASSWD: ${DATABASE_PASSWORD}
       DEFAULT_THEME: ${GITEA_THEME}
-      HTTP_PORT: ${GITEA_PORT}
+      # HTTP_PORT: ${GITEA_PORT}
     restart: unless-stopped
     volumes:
       - ./storage/gitea.data:/data
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     ports:
-      - "${GITEA_PORT}:3000"
+      - "${GITEA_PORT}:7433"
       - "2222:22"
     networks:
       dev: # this is the place where we assign the static ipv4 address
@@ -142,17 +142,19 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
 
-  mail:
-    # <<: *logging
-    image: schickling/mailcatcher:latest
+  maildev:
+    image: djfarrelly/maildev
     container_name: "mail.${APP_NAME}"
     restart: unless-stopped
     env_file: ./.env
+    environment:
+      MAILDEV_SMTP_PORT: ${SMTP_PORT}
+      MAILDEV_WEB_PORT: ${WEBMAIL_PORT}
     ports:
-      - "${MAIL_PORT}:1025"
-      - "${WEBMAIL_PORT}:1080"
+      - "${SMTP_PORT}:25"
+      - "${WEBMAIL_PORT}:80"
     networks:
-      dev: # this is the place where we assign the static ipv4 address
+      cmet: # this is the place where we assign the static ipv4 address
         ipv4_address: 192.10.100.8
     volumes:
       - /etc/timezone:/etc/timezone:ro
@@ -170,6 +172,10 @@ services:
     container_name: "php.${APP_NAME}"
     restart: unless-stopped
     env_file: ./.env
+    environment:
+      APP_NAME: ${APP_NAME}
+      ENVIRONMENT: ${ENVIRONMENT}
+      LISTEN: ${API_PORT}
     entrypoint: sh /bin/entrypoint.sh php-fpm
     volumes:
       - ./src/backend:/var/www/backend
@@ -182,7 +188,7 @@ services:
     expose:
       - 9000
     ports:
-      - '${PHPSRV_PORT}:7409'
+      - '${PHPSRV_PORT}:${PHPSRV_PORT}'
 
   nodejs:
     #<<: *logging
@@ -193,13 +199,16 @@ services:
     container_name: "nodejs.${APP_NAME}"
     restart: unless-stopped
     env_file: ./.env
+    environment:
+      APP_NAME: ${APP_NAME}
+      ENVIRONMENT: ${ENVIRONMENT}
     stdin_open: true # docker run -i
     tty: true        # docker run -t
     networks:
       dev: # this is the place where we assign the static ipv4 address
         ipv4_address: 192.10.100.10
     ports:
-      - '${NODE_PORT}:7090'
+      - '${NODE_PORT}:8080'
     volumes:
       - ./src/frontend:/var/www/frontend
       - /etc/timezone:/etc/timezone:ro
@@ -211,14 +220,21 @@ services:
     container_name: "nginx.${APP_NAME}"
     restart: unless-stopped
     env_file: ./.env
+    environment:
+      APP_NAME: ${APP_NAME}
+      ENVIRONMENT: ${ENVIRONMENT}
+      NGINX_PORT: ${NGINX_PORT}
+      API_PORT: ${API_PORT}
     ports:
-      - "${NGINX_PORT}:80"
+        - "${NGINX_PORT}:${NGINX_PORT}"
     depends_on:
       - php
       - loki
     volumes:
       - ./src/frontend:/var/www/frontend
       - ./src/backend:/var/www/backend
+      # - ./.docker/nginx/default.conf:/etc/nginx/conf.d/site.conf
+      - ./.docker/nginx/templates:/etc/nginx/templates
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     networks:

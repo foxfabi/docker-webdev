@@ -58,6 +58,10 @@ Additional setup steps and informations:
 * [Loki Syslog All-In-One example](https://computingforgeeks.com/forward-logs-to-grafana-loki-using-promtail/)
 * [Running loki and grafana on docker swarm](https://drailing.net/2020/06/running-loki-and-grafana-on-docker-swarm/)
 
+## .env Environment
+
+- [](https://www.php.net/manual/de/function.getenv.php)
+
 ## Command line usage
 
 **Since everything that has to do with the stack, only runs in the container, you have to put the commands into the corresponding container.**

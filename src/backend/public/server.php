@@ -2,9 +2,10 @@
 
 use Swoole\HTTP\Server;
 
-$port = 7409;
+$LISTEN = getenv('LISTEN', true) ?: getenv('LISTEN');
+if (empty($LISTEN)) { $LISTEN = 7409; }
 
-$server = new Server("0.0.0.0", $port);
+$server = new Server("0.0.0.0", $LISTEN);
 
 $server->on("start", function (Swoole\Http\Server $server) {
     sprintf("Swoole http server is started at http://0.0.0.0:%d\n", $server->port);

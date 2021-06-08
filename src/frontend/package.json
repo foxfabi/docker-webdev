@@ -1,16 +1,18 @@
 {
   "name": "frontend",
   "version": "1.0.0",
+  "private": true,
   "description": "Docker Application Frontend",
-  "main": "server.js",
-  "config" : {
-    "port" : "8080"
-  },
   "scripts": {
+    "set-env": "npm env-linux",
+    "env-linux": "export $(cat .env | xargs) && env",
+    "env-windows": "(for /F \"tokens=*\" %i in (.env) do set %i)",
+    "start-linux": "npm run env-linux && npm start",
+    "start-windows": "npm run env-windows && && npm start",
     "lint": "node server.js",
     "serve": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Fabian Dennler",
   "license": "ISC"
 }

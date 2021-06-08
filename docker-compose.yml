@@ -229,7 +229,7 @@ services:
       NGINX_PORT: ${NGINX_PORT}
       API_PORT: ${API_PORT}
     ports:
-        - "${NGINX_PORT}:${NGINX_PORT}"
+      - "${NGINX_PORT}:${NGINX_PORT}"
     depends_on:
       - php
       - loki

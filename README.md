@@ -19,7 +19,7 @@ Docker Containers (as microservice approach), which are executed with `docker-co
   - Loki: log aggregator
   - Promtail: Agent which will read up the contents of the log file/files and ship those logs to Loki
 - [**Gitea**](https://gitea.io/) Repository and Issue tracker.
-- [**MailCatcher**](https://mailcatcher.me/) to catch all mail and stores it for display.
+- [**MailDev**](https://github.com/maildev/maildev) SMTP Server + Web Interface for viewing and testing emails during development.
 
 ## Initial services configuration
 

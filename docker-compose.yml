@@ -13,6 +13,7 @@ x-logging: &logging
     driver: loki
     options: # note: the ip is the ip we will assign later to loki in this file
       loki-url: "http://192.10.100.2:3100/loki/api/v1/push"
+      #loki-external-labels: "container_name={{.Name}},compose_project={{.Label "com.docker.compose.project"}},compose_service={{.Label "com.docker.compose.service"}}"
       # loki-url: "http://loki:3100/loki/api/v1/push"
 
 services:
@@ -28,9 +29,7 @@ services:
       dev: # this is the place where we assign the static ipv4 address
         ipv4_address: 192.10.100.2
     volumes:
-      - ./.docker/loki-config.yaml:/etc/loki/local-config.yaml
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
+      - ./.docker/grafana/loki-config.yaml:/etc/loki/local-config.yaml
 
   promtail:
     image: grafana/promtail:2.0.0
@@ -44,9 +43,7 @@ services:
         ipv4_address: 192.10.100.3
     volumes:
       - /var/log:/var/log
-      - ./.docker/promtail-config.yaml:/etc/promtail/config.yml
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
+      - ./.docker/grafana/promtail-config.yaml:/etc/promtail/config.yml
 
   grafana:
     image: grafana/grafana:latest
@@ -59,9 +56,9 @@ services:
       dev: # this is the place where we assign the static ipv4 address
         ipv4_address: 192.10.100.4
     volumes:
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
-      - ./.docker/grafana-datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+      #- ./storage/grafana.data:/var/lib/grafana
+      - ./.docker/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./.docker/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
     environment:
       GF_SECURITY_ADMIN_USER: ${GF_SECURITY_ADMIN_USER}
       GF_SECURITY_ADMIN_PASSWORD: ${GF_SECURITY_ADMIN_PASSWORD}
@@ -70,6 +67,7 @@ services:
       GF_USERS_ALLOW_ORG_CREATE: ${GF_USERS_ALLOW_ORG_CREATE}
       GF_AUTH_ANONYMOUS_ENABLED: ${GF_AUTH_ANONYMOUS_ENABLED}
       GF_INSTALL_PLUGINS: ${GF_INSTALL_PLUGINS}
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /etc/grafana/provisioning/dashboards/webdev-dashboard.json
     depends_on:
       - promtail
       - loki
@@ -91,8 +89,6 @@ services:
     restart: unless-stopped
     volumes:
       - ./storage/gitea.data:/data
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
     ports:
       - "${GITEA_PORT}:7433"
       - "2222:22"
@@ -114,14 +110,11 @@ services:
     networks:
       dev: # this is the place where we assign the static ipv4 address
         ipv4_address: 192.10.100.6
-    volumes:
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
     depends_on:
       - db
 
   db:
-    # <<: *logging
+    <<: *logging
     image: mariadb:latest
     container_name: "db.${APP_NAME}"
     restart: unless-stopped
@@ -140,8 +133,6 @@ services:
     volumes:
       - ./storage/db.data:/var/lib/mysql
       - ./.docker/db/init:/docker-entrypoint-initdb.d:ro
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
 
   maildev:
     <<: *logging
@@ -158,9 +149,6 @@ services:
     networks:
       dev: # this is the place where we assign the static ipv4 address
         ipv4_address: 192.10.100.8
-    volumes:
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
 
   php:
     <<: *logging
@@ -182,8 +170,6 @@ services:
     volumes:
       - ./.docker/php/msmtprc:/etc/msmtprc:ro
       - ./src/backend:/var/www/backend
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
       - ./.docker/php/docker-entrypoint.sh:/bin/entrypoint.sh:ro
     networks:
       dev: # this is the place where we assign the static ipv4 address
@@ -192,12 +178,12 @@ services:
       - 9000
     ports:
       - '${API_PORT}:${API_PORT}'
+      - '${PHPDEV_PORT}:${PHPDEV_PORT}'
     links:
       - maildev:maildev
 
   nodejs:
     <<: *logging
-    #<<: *logging
     build:
       context: .
       dockerfile: ./.docker/nodejs/Dockerfile
@@ -217,8 +203,6 @@ services:
       - '${NODE_PORT}:${NODE_PORT}'
     volumes:
       - ./src/frontend:/var/www/frontend
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
 
   nginx:
     <<: *logging
@@ -240,8 +224,6 @@ services:
       - ./.docker/nginx/templates:/etc/nginx/templates:rw,cached
       - ./src/frontend:/var/www/frontend
       - ./src/backend:/var/www/backend
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
     networks:
       dev: # this is the place where we assign the static ipv4 address
         ipv4_address: 192.10.100.11

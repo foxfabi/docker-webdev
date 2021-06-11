@@ -6,7 +6,6 @@ FROM php:7.4-fpm-buster AS base
 ENV COMPOSER_ALLOW_SUPERUSER 1
 ENV LC_ALL C.UTF-8
 #RUN pwd && ls -la
-
 RUN apt-get update &&           \
     apt-get install -y          \
     ca-certificates             \
@@ -32,7 +31,6 @@ RUN apt-get update &&           \
     --no-install-recommends &&  \
     apt-get clean &&            \
     rm -rf /var/lib/apt/lists/*
-
 RUN docker-php-ext-install -j$(nproc)   \
     gd                                  \
     intl                                \
@@ -43,7 +41,6 @@ RUN docker-php-ext-install -j$(nproc)   \
     opcache                             \
     bcmath                              \
     sockets
-
 # Add the async backend
 ENV SWOOLE_URL=https://github.com/swoole/swoole-src/archive/v4.6.6.tar.gz
 RUN docker-php-source extract &&        \
@@ -51,8 +48,8 @@ RUN docker-php-source extract &&        \
     curl -sfL $SWOOLE_URL -o swoole.tar.gz && \
     tar xfz swoole.tar.gz --strip-components=1 -C /usr/src/php/ext/swoole && \
     docker-php-ext-configure swoole \
-        --enable-http2 --enable-mysqlnd --enable-openssl \
-        --enable-sockets --enable-swoole-curl --enable-swoole-json && \
+    --enable-http2 --enable-mysqlnd --enable-openssl \
+    --enable-sockets --enable-swoole-curl --enable-swoole-json && \
     docker-php-ext-install -j$(nproc) swoole && \
     rm -f swoole.tar.gz $HOME/.composer/*-old.phar && \
     docker-php-source delete && \
@@ -72,7 +69,6 @@ RUN composer install \
 RUN echo "PHP Version:" "$(php -v)"
 RUN echo "Composer Version:" "$(composer --version)"
 EXPOSE 9000
-
 
 FROM base as development
 ADD https://squizlabs.github.io/PHP_CodeSniffer/phpcs.phar /usr/local/bin/phpcs
@@ -95,7 +91,7 @@ RUN apt-get update && apt-get install -y msmtp msmtp-mta mailutils
 # PHP configuration
 RUN docker-php-source extract && \
     cp '/usr/src/php/php.ini-development' $PHP_INI_DIR/php.ini && \
-    echo "date.timezone=${TIMEZONE}" >> $PHP_INI_DIR/conf.d/timezone.ini && \
+    echo "date.timezone=${TZ}" >> $PHP_INI_DIR/conf.d/timezone.ini && \
     # XDEBUG PHP Config
     echo "[xdebug]" >> $PHP_INI_DIR/conf.d/xdebug.ini && \
     echo "xdebug.mode=debug" >> $PHP_INI_DIR/conf.d/xdebug.ini && \
@@ -133,7 +129,6 @@ RUN composer install \
     --prefer-dist \
     --profile
 
-
 #FROM php:7.4.7-cli-alpine3.12 as production
 FROM builder AS production
 WORKDIR /var/www/backend
@@ -145,7 +140,7 @@ COPY --from=builder /usr/local/lib/php/extensions /usr/local/lib/php/extensions
 # PHP configuration
 RUN docker-php-source extract && \
     cp '/usr/src/php/php.ini-production' $PHP_INI_DIR/php.ini && \
-    echo "date.timezone=${TIMEZONE}" >> $PHP_INI_DIR/conf.d/timezone.ini && \
+    echo "date.timezone=${TZ}" >> $PHP_INI_DIR/conf.d/timezone.ini && \
     echo "log_errors = On" >> $PHP_INI_DIR/conf.d/log.ini && \
     echo "error_log=/dev/stderr" >> $PHP_INI_DIR/conf.d/log.ini && \
     docker-php-source delete

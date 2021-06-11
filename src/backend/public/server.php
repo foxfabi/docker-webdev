@@ -2,8 +2,12 @@
 
 use Swoole\HTTP\Server;
 
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__.'/../../'); // Location of .env
+$dotenv->load();
 $LISTEN = getenv('LISTEN', true) ?: getenv('LISTEN');
-if (empty($LISTEN)) { $LISTEN = 7409; }
+if (empty($LISTEN)) {
+    throw new Exception('Fail! Configure the API port.');
+ }
 
 $server = new Server("0.0.0.0", $LISTEN);
 

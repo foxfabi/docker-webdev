@@ -9,8 +9,10 @@ Docker Containers (as microservice approach), which are executed with `docker-co
 ## Images and Containers
 
 - **Persistent storage** (Application and Data Volume Container).
-  - `./application/frontend`
-  - `./application/backend`
+  - `./src/frontend`
+  - `./src/backend`
+  - `./storage/db.data`
+  - `./storage/gitea.data`
 - [**NGINX**](https://www.nginx.com/) Web server. Deliver the frontend `./application/frontend/dist` and provide API access via proxy forwarder.
 - **PHP 7.4.x (CLI)** with Composer, PHP CodeSniffer, phpDocumentor, phpunit and XDebug (Multi Stage) for development.
 - [**MariaDB**](https://mariadb.org/) SQL database.
@@ -60,7 +62,10 @@ Additional setup steps and informations:
 
 ## .env Environment
 
-- [](https://www.php.net/manual/de/function.getenv.php)
+Environment variables allow us to manage the configuration of our applications separate from our codebase. Separating configurations make it easier for our application to be deployed in different environments. **Note:** Values in the shell take precedence over those specified in the `.env` file.
+
+- **Docker Node.js** contains [`dotenv`](https://www.npmjs.com/package/dotenv). We [start the node app with `dotenv` preloaded](https://dev.to/getd/how-to-manage-secrets-and-configs-using-dotenv-in-node-js-and-docker-2214)
+- **Docker PHP** contains [`PHP dotenv`](https://github.com/vlucas/phpdotenv), while using `getenv()` and `putenv()` is strongly discouraged due to the fact that these functions are not thread safe.
 
 ## Command line usage
 
@@ -82,7 +87,7 @@ docker exec -it <container> /bin/bash
 To execute a PHP script:
 
 ```bash
-docker exec php,webdev /usr/local/bin/php /var/www/backend/public/index.php
+docker exec php /usr/local/bin/php /var/www/backend/public/index.php
 ```
 
 Creating database dumps:
@@ -100,22 +105,27 @@ docker exec -i db sh -c 'exec mysql -uroot -p"$MARIADB_ROOT_PASSWORD"' < /some/p
 Start node development mode
 
 ```bash
-docker exec -it nodejs.webdev npm run serve
+docker exec -it nodejs npm run serve
 ```
 
 Build Frontend
 
 ```bash
-docker exec -it nodejs.webdev npm run build`
+docker exec -it nodejs npm run build`
 ```
 
 Add packages to node.js
 
 ```bash
-docker exec -it nodejs.webdev npm install dotenv --save
+docker exec -it nodejs npm install dotenv --save
 ```
 
--
+Add packages to php
+
+```bash
+docker exec -it php composer require vlucas/phpdotenv
+```
+
 ## License
 
 MIT © Fabian Dennler

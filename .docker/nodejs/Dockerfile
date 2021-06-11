@@ -43,7 +43,7 @@ ENV NODE_ENV=development
 RUN npm config set unsafe-perm true &&      \
     npm install -g nodemon &&               \
     # install the dotenv package from the npm as a dev dependencies
-    npm install dotenv --save-dev && \
+    #npm install dotenv --save-dev && \
     npm install eslint --save-dev
 # HEALTHCHECK --interval=5s \
 #             --timeout=5s \
@@ -68,4 +68,3 @@ RUN npm install -g serve
 # get rid of any development dependencies
 RUN npm prune --production
 CMD ["dumb-init", "npm", "run", "serve", "-s build"]
-# FROM builder as production

@@ -14,7 +14,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Fabian Dennler",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "dotenv": "^10.0.0"
   }

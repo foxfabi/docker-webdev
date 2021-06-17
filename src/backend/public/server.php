@@ -1,8 +1,11 @@
 <?php
 
 use Swoole\HTTP\Server;
+use Dotenv\Dotenv;
 
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__.'/../../'); // Location of .env
+require __DIR__ . '/../vendor/autoload.php';
+
+$dotenv = Dotenv::createImmutable(__DIR__.'/../');
 $dotenv->load();
 $LISTEN = getenv('LISTEN', true) ?: getenv('LISTEN');
 if (empty($LISTEN)) {

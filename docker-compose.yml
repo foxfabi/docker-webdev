@@ -1,5 +1,13 @@
 version: "3.7"
 
+volumes:
+  data:
+    name: ${DATA_VOLUME}
+    external: true
+  code:
+    name: ${CODE_VOLUME}
+    external: true
+
 networks:
   dev: # virtual network name
     driver: bridge
@@ -42,7 +50,7 @@ services:
       dev: # this is the place where we assign the static ipv4 address
         ipv4_address: 192.10.100.3
     volumes:
-      - /var/log:/var/log
+      #- /var/log:/var/log
       - ./.docker/grafana/promtail-config.yaml:/etc/promtail/config.yml
 
   grafana:
@@ -88,7 +96,7 @@ services:
       # HTTP_PORT: ${GITEA_PORT}
     restart: unless-stopped
     volumes:
-      - ./storage/gitea.data:/data
+      - ${DATA_VOLUME}/gitea.data:/data
     ports:
       - "${GITEA_PORT}:7433"
       - "2222:22"
@@ -131,7 +139,7 @@ services:
       DATABASE_APP: ${APP_DATABASE}
       DATABASE_GITEA: ${GITEA_DATABASE}
     volumes:
-      - ./storage/db.data:/var/lib/mysql
+      - ${DATA_VOLUME}/db.data:/var/lib/mysql
       - ./.docker/db/init:/docker-entrypoint-initdb.d:ro
 
   maildev:
@@ -157,6 +165,8 @@ services:
       context: .
       dockerfile: ./.docker/php/Dockerfile
       target: ${ENVIRONMENT}
+      args:
+        VOLUME: ${CODE_VOLUME}/backend # from .env file
     stdin_open: true # docker run -i
     tty: true        # docker run -t
     container_name: "php.${APP_NAME}"
@@ -169,7 +179,7 @@ services:
     entrypoint: sh /bin/entrypoint.sh php-fpm
     volumes:
       - ./.docker/php/msmtprc:/etc/msmtprc:ro
-      - ./src/backend:/var/www/backend
+      - /DATA/c0met/src/backend:/var/www/backend
       - ./.env:/var/www/backend/.env
       - ./.docker/php/docker-entrypoint.sh:/bin/entrypoint.sh:ro
     networks:
@@ -189,6 +199,8 @@ services:
       context: .
       dockerfile: ./.docker/nodejs/Dockerfile
       target: ${ENVIRONMENT}
+      args:
+        ENV: ${ENV} # from .env file
     container_name: "nodejs.${APP_NAME}"
     restart: unless-stopped
     env_file: ./.env
@@ -203,7 +215,7 @@ services:
     ports:
       - '${NODE_PORT}:${NODE_PORT}'
     volumes:
-      - ./src/frontend:/var/www/frontend
+      - ${CODE_VOLUME}/frontend:/var/www/frontend
 
   nginx:
     <<: *logging
@@ -223,8 +235,8 @@ services:
       - loki
     volumes:
       - ./.docker/nginx/templates:/etc/nginx/templates:rw,cached
-      - ./src/frontend:/var/www/frontend
-      - ./src/backend:/var/www/backend
+      - ${CODE_VOLUME}/frontend:/var/www/frontend
+      - ${CODE_VOLUME}/backend:/var/www/backend
     networks:
       dev: # this is the place where we assign the static ipv4 address
         ipv4_address: 192.10.100.11

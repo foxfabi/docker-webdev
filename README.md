@@ -13,6 +13,9 @@ Docker Containers (as microservice approach), which are executed with `docker-co
   - `./src/backend`
   - `./storage/db.data`
   - `./storage/gitea.data`
+  - Use symbolic links so that you can reuse the containers below.
+    - `src -> /DATA/yourapp/src/`
+    - `storage -> /DATA/yourapp/storage/`
 - [**NGINX**](https://www.nginx.com/) Web server. Deliver the frontend `./application/frontend/dist` and provide API access via proxy forwarder.
 - **PHP 7.4.x (CLI)** with Composer, PHP CodeSniffer, phpDocumentor, phpunit and XDebug (Multi Stage) for development.
 - [**MariaDB**](https://mariadb.org/) SQL database.

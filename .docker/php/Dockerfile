@@ -57,8 +57,11 @@ RUN docker-php-source extract &&        \
 # copy the Composer PHAR from the Composer image into the PHP image
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www/backend
-COPY ./src/backend .
-# RUN pwd && ls -la
+# from compose args
+ARG VOLUME
+ENV VOLUME $VOLUME
+RUN echo $VOLUME
+COPY $$VOLUME .
 # COPY ./.docker/php/docker-entrypoint.sh /usr/bin/start-container
 # RUN chmod +x /usr/bin/start-container
 RUN composer install \

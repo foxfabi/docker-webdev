@@ -170,6 +170,7 @@ services:
     volumes:
       - ./.docker/php/msmtprc:/etc/msmtprc:ro
       - ./src/backend:/var/www/backend
+      - ./.env:/var/www/backend/.env
       - ./.docker/php/docker-entrypoint.sh:/bin/entrypoint.sh:ro
     networks:
       dev: # this is the place where we assign the static ipv4 address
